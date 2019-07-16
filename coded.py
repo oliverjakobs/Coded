@@ -145,7 +145,7 @@ text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 scroll.pack(side=tk.RIGHT, fill=tk.Y)
 
 # fileview
-fileview = FileView(workspace, path=os.getcwd())
+fileview = FileView(workspace, path=os.getcwd(), text="Explorer")
 fileview.place(relx=relX, rely=0.0, relwidth=(1.0-relX), relheight=relY)
 
 # console
