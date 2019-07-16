@@ -132,24 +132,27 @@ run_cmd.current(0)
 run_cmd.pack(side=tk.RIGHT)
 
 # workspace
-workspace = ttk.Frame(root)
+workspace = ttk.PanedWindow(root, orient=tk.VERTICAL)
 workspace.grid(row=1, column=0, sticky=tk.NSEW)
+
+workspaceRow = ttk.PanedWindow(workspace, orient=tk.HORIZONTAL)
+workspace.add(workspaceRow)
 
 relX = 0.8
 relY = 0.8
 
 # editor
-editor = Editor(workspace)
-editor.place(relx=0.0, rely=0.0, relwidth=relX, relheight=relY)
+editor = Editor(workspaceRow)
+workspaceRow.add(editor)
 
 # fileview
-fileview = FileView(workspace, path=os.getcwd(), text="Explorer")
-fileview.place(relx=relX, rely=0.0, relwidth=(1.0-relX), relheight=relY)
+fileview = FileView(workspaceRow, path=os.getcwd(), text="Explorer")
 fileview.tree.bind("<<TreeviewOpen>>", open_selected)
+workspaceRow.add(fileview)
 
 # console
 console = ttk.Notebook(workspace)
-console.place(relx=0.0, rely=relY, relwidth=1.0, relheight=(1.0-relY))
+workspace.add(console)
 
 console.add(ttk.Frame(console), text="Output")
 console.add(ttk.Frame(console), text="Terminal")
