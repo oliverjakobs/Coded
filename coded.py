@@ -1,4 +1,5 @@
 import os
+import sys
 
 # import tkinter
 import tkinter as tk
@@ -94,7 +95,7 @@ menu_file.add_separator()
 menu_file.add_command(label="Save", command=save)
 menu_file.add_command(label="Save As", command=save_as)
 menu_file.add_separator()
-menu_file.add_command(label="Exit", command=root.quit)
+menu_file.add_command(label="Exit", command=root.destroy)
 
 # edit
 menu_edit = tk.Menu(menu, tearoff=0)
@@ -148,11 +149,11 @@ workspaceRow.add(editor)
 # fileview
 fileview = FileView(workspaceRow, path=os.getcwd(), text="Explorer")
 fileview.tree.bind("<<TreeviewOpen>>", open_selected)
-workspaceRow.add(fileview)
+#workspaceRow.add(fileview)
 
 # console
 console = ttk.Notebook(workspace)
-workspace.add(console)
+#workspace.add(console)
 
 console.add(ttk.Frame(console), text="Output")
 console.add(ttk.Frame(console), text="Terminal")
@@ -160,6 +161,10 @@ console.add(ttk.Frame(console), text="Terminal")
 # status bar
 status = tk.Label(root, text="Status...", bd=1, relief=tk.SUNKEN, anchor=tk.W)
 status.grid(row=2, column=0, sticky=tk.EW)
+
+# Command Line Arguments
+for arg in sys.argv[1:]:
+    load_tab(arg)
 
 # run
 root.mainloop()

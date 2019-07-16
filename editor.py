@@ -1,29 +1,23 @@
 import tkinter as tk
 from tkinter import ttk
 
+from tktextext import TextFrame 
+
 class Editor(ttk.Notebook):
     def __init__(self, master):
         ttk.Notebook.__init__(self, master)
         self.bind("<<NotebookTabChanged>>", self.on_event)
-
         self.tab_texts = []
 
     def add_tab(self, name):
-        tab = ttk.Frame(self)
+        tab = TextFrame(self, read_only=False, wrap=tk.NONE, line_numbers=True)
         self.add(tab, text=name)
         self.select(tab)
 
-        text = tk.Text(tab)
-
         # add to list
-        self.tab_texts.append(text)
+        self.tab_texts.append(tab.text)
 
-        scroll = ttk.Scrollbar(tab, command=text.yview)
-        text.configure(yscrollcommand=scroll.set)
-        text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scroll.pack(side=tk.RIGHT, fill=tk.Y)
-
-        return text
+        return tab.text
 
     def on_event(self, event):
         pass
