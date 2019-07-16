@@ -8,6 +8,7 @@ from tkinter import filedialog
 
 # import own stuff
 from fileview import FileView
+from editor import Editor
 
 def set_title(name=None):
     global root
@@ -17,13 +18,22 @@ def set_title(name=None):
         root.title("Untitled - Coded")
 
 def new_file():
-    global text, filename
-    text.delete(1.0, tk.END)
-    filename = None
-    set_title()
+    global editor
+    editor.add_tab(name="Untitled")
+
+def load_tab(filename):
+    global editor
+
+    if os.path.isfile(filename):
+        text = editor.add_tab(os.path.relpath(filename))
+        with open(filename, "r") as f:
+            text.insert(1.0, f.read())
+
+def open_selected(filename):
+    global fileview
+    load_tab(fileview.focus_path())
 
 def open_file():
-    global text, filename
     filename = filedialog.askopenfilename(defaultextension=".txt", 
     filetypes= [
         ("All Files", "*.*"),
@@ -31,36 +41,31 @@ def open_file():
         ("Python Scripts", "*.py"),
         ("Json Files", "*.json")])
 
-    if filename:
-        text.delete(1.0, tk.END)
-        with open(filename, "r") as f:
-            text.insert(1.0, f.read())
-        set_title(filename)
+    load_tab(filename)
 
 def save():
-    global text, filename
-    if filename:
+    global editor
+    if editor.get_name() != "Untitled":
         try:
-            with open(filename, "w") as f:
-                f.write(text.get(1.0, tk.END))
+            with open(os.path.abspath(editor.get_name()), "w") as f:
+                f.write(editor.get_text().get(1.0, tk.END))
         except Exception as e:
             print(e)
     else:
         save_as()
 
 def save_as():
-    global text, filename
+    global editor
     try:
-        new_file = filedialog.asksaveasfilename(initialfil="Untitled.txt", defaultextension=".txt", 
+        filename = filedialog.asksaveasfilename(initialfil="Untitled.txt", defaultextension=".txt", 
             filetypes= [
                 ("All Files", "*.*"),
                 ("Text Files", "*.txt"),
                 ("Python Scripts", "*.py"),
                 ("Json Files", "*.json")])
-        with open(new_file, "w") as f:
-            f.write(text.get(1.0, tk.END))
-        filename = new_file
-        set_title(new_file)
+        with open(filename, "w") as f:
+            f.write(editor.get_text().get(1.0, tk.END))
+        editor.set_name(os.path.relpath(filename))
     except Exception as e:
         print(e)
 
@@ -68,11 +73,13 @@ def save_as():
 root = tk.Tk()
 root.title("Coded")
 root.geometry("1200x800")
+# root.iconbitmap("icon.ico")
 
 root.rowconfigure(1, weight=1)
 root.columnconfigure(0, weight=1)
 
-filename = None
+# style
+style = ttk.Style()
 
 # menubar
 menu = tk.Menu(root)
@@ -124,7 +131,7 @@ run_cmd = ttk.Combobox(toolbar, values=["Choose Command", "Manage..."])
 run_cmd.current(0)
 run_cmd.pack(side=tk.RIGHT)
 
-#workspace
+# workspace
 workspace = ttk.Frame(root)
 workspace.grid(row=1, column=0, sticky=tk.NSEW)
 
@@ -132,21 +139,13 @@ relX = 0.8
 relY = 0.8
 
 # editor
-notebook = ttk.Notebook(workspace)
-notebook.place(relx=0.0, rely=0.0, relwidth=relX, relheight=relY)
-
-tab = ttk.Frame(notebook)
-notebook.add(tab, text="Tab")
-
-text = tk.Text(tab)
-scroll = ttk.Scrollbar(tab, command=text.yview)
-text.configure(yscrollcommand=scroll.set)
-text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-scroll.pack(side=tk.RIGHT, fill=tk.Y)
+editor = Editor(workspace)
+editor.place(relx=0.0, rely=0.0, relwidth=relX, relheight=relY)
 
 # fileview
 fileview = FileView(workspace, path=os.getcwd(), text="Explorer")
 fileview.place(relx=relX, rely=0.0, relwidth=(1.0-relX), relheight=relY)
+fileview.tree.bind("<<TreeviewOpen>>", open_selected)
 
 # console
 console = ttk.Notebook(workspace)
