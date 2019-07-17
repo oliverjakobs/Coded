@@ -2,24 +2,35 @@ import os
 import tkinter as tk
 from tkinter import ttk
 
+from autscroll import autoscroll
+
 class FileView(ttk.Frame):
     def __init__(self, master, path, text):
         ttk.Frame.__init__(self, master)
-        self.tree = ttk.Treeview(self)
-        scrollY = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.tree.yview)
-        scrollX = ttk.Scrollbar(self, orient=tk.HORIZONTAL, command=self.tree.xview)
-        self.tree.configure(yscroll=scrollY.set, xscroll=scrollX.set)
-        self.tree.heading('#0', text=text, anchor=tk.W)
+        
+        # Setup tree and its scrollbars
+        scrollY = ttk.Scrollbar(self, orient=tk.VERTICAL)
+        scrollX = ttk.Scrollbar(self, orient=tk.HORIZONTAL)
 
+        self.tree = ttk.Treeview(self, yscrollcommand=lambda f, l:autoscroll(scrollY, f, l),
+                                       xscrollcommand=lambda f, l:autoscroll(scrollX, f, l))
+
+        scrollY['command'] = self.tree.yview
+        scrollX['command'] = self.tree.xview
+
+        # Fill the TreeView
+        self.tree.heading('#0', text=text, anchor=tk.W)
         abspath = os.path.abspath(path)
         root_node = self.tree.insert('', tk.END, text=abspath, open=True)
         self.process_directory(root_node, abspath)
 
-        self.tree.grid(row=0, column=0, sticky=tk.NS)
+        # Arrange the tree and its scrollbars in the grid
+        self.tree.grid(row=0, column=0, sticky=tk.NSEW)
         scrollY.grid(row=0, column=1, sticky=tk.NS)
         scrollX.grid(row=1, column=0, sticky=tk.EW)
 
         self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
     def process_directory(self, parent, path):
         for p in os.listdir(path):

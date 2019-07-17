@@ -4,8 +4,8 @@ from tkinter import ttk
 from text import NumberedFrame
 
 class Editor(ttk.Notebook):
-    def __init__(self, master):
-        ttk.Notebook.__init__(self, master)
+    def __init__(self, master, **kw):
+        ttk.Notebook.__init__(self, master, **kw)
         self.bind("<<NotebookTabChanged>>", self.tab_changed)
         self.tab_texts = []
         self.tab_names = []

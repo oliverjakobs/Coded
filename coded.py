@@ -29,6 +29,7 @@ def load_tab(filename):
     if os.path.isfile(filename):
         text = editor.add_tab(os.path.relpath(filename))
         if text:
+            # TODO: Exception handling
             with open(filename, "r") as f:
                 text.insert(1.0, f.read())
             set_status("Opened " + filename + ".")
@@ -141,23 +142,20 @@ toolbar.grid(row=0, column=0, sticky=tk.EW)
 # run_cmd.pack(side=tk.RIGHT)
 
 # workspace
-workspace = ttk.PanedWindow(root, orient=tk.VERTICAL)
+workspace = ttk.PanedWindow(root, orient=tk.HORIZONTAL)
 workspace.grid(row=1, column=0, sticky=tk.NSEW)
-
-workspaceRow = ttk.PanedWindow(workspace, orient=tk.HORIZONTAL)
-workspace.add(workspaceRow)
 
 relX = 0.8
 relY = 0.8
 
 # editor
-editor = Editor(workspaceRow)
-workspaceRow.add(editor)
+editor = Editor(workspace)
+workspace.add(editor)
 
 # fileview
-fileview = FileView(workspaceRow, path=os.getcwd(), text="Explorer")
+fileview = FileView(workspace, path=os.getcwd(), text="Explorer")
 fileview.tree.bind("<<TreeviewOpen>>", open_selected)
-#workspaceRow.add(fileview)
+workspace.add(fileview)
 
 # console
 console = ttk.Notebook(workspace)
