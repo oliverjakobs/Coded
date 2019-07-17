@@ -717,8 +717,8 @@ if __name__ == "__main__":
     # demo
     root = tk.Tk()
     frame = TextFrame(root, read_only=False, wrap=tk.NONE,
-                      line_numbers=True, line_length_margin=13,
-                      text_class=TweakableText)
+                      line_numbers=True, line_length_margin=64,
+                      text_class=EnhancedText)
     frame.grid()
     text = frame.text
     

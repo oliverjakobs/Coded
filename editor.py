@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from tktextext import TextFrame 
+from text import NumberedFrame
 
 class Editor(ttk.Notebook):
     def __init__(self, master):
@@ -14,7 +14,7 @@ class Editor(ttk.Notebook):
         if name in self.tab_names:
             return None
 
-        tab = TextFrame(self, read_only=False, wrap=tk.NONE, line_numbers=True)
+        tab = NumberedFrame(self, wrap=tk.NONE, line_numbers=True)
         self.add(tab, text=name)
         self.select(tab)
 
