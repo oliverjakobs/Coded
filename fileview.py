@@ -15,11 +15,11 @@ class FileView(ttk.Frame):
         self.tree = ttk.Treeview(self, yscrollcommand=lambda f, l:autoscroll(scrollY, f, l),
                                        xscrollcommand=lambda f, l:autoscroll(scrollX, f, l))
 
-        scrollY['command'] = self.tree.yview
-        scrollX['command'] = self.tree.xview
+        scrollY["command"] = self.tree.yview
+        scrollX["command"] = self.tree.xview
 
         # Fill the TreeView
-        self.tree.heading('#0', text=text, anchor=tk.W)
+        self.tree.heading("#0", text=text, anchor=tk.W)
         abspath = os.path.abspath(path)
         root_node = self.tree.insert('', tk.END, text=abspath, open=True)
         self.process_directory(root_node, abspath)
@@ -48,7 +48,7 @@ class FileView(ttk.Frame):
         path = self.tree.item(item_id)["text"]
 
         item_id = self.tree.parent(item_id)
-        while item_id != '':
+        while self.tree.parent(item_id) != '':
             path = self.tree.item(item_id)["text"] + "\\" + path
             item_id = self.tree.parent(item_id)
 

@@ -143,21 +143,22 @@ class NumberedFrame(ttk.Frame):
         # margin will be gridded later
         self.set_line_numbers(first_line)
         
+        # TODO: Autoscroll
         self.vbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
         self.vbar.grid(row=0, column=2, sticky=tk.NSEW)
         
         self.hbar = ttk.Scrollbar(self, orient=tk.HORIZONTAL)
         self.hbar.grid(row=1, column=0, sticky=tk.NSEW, columnspan=2)
         
-        self.text["yscrollcommand"] = self.vertical_scrollbar_update  
-        self.text["xscrollcommand"] = self.horizontal_scrollbar_update    
-        self.vbar["command"] = self.vertical_scroll 
-        self.hbar["command"] = self.horizontal_scroll
+        self.text["yscrollcommand"] = self.on_text_vertical_scroll
+        self.text["xscrollcommand"] = self.on_text_horizontal_scroll   
+        self.vbar["command"] = self.on_vertical_scroll 
+        self.hbar["command"] = self.on_horizontal_scroll
         
         self.columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
         
-        self.text.bind("<<TextChange>>", self.text_changed, True)
+        self.text.bind("<<TextChange>>", self.on_text_changed, True)
     
     def focus_set(self):
         self.text.focus_set()
@@ -170,21 +171,21 @@ class NumberedFrame(ttk.Frame):
             self.line_numbers.grid(row=0, column=0, sticky=tk.NSEW)
             self.update_line_numbers()
     
-    def text_changed(self, event):
+    def on_text_changed(self, *args):
         self.update_line_numbers()
     
-    def vertical_scrollbar_update(self, *args):
+    def on_text_vertical_scroll(self, *args):
         self.vbar.set(*args)
         self.line_numbers.yview(tk.MOVETO, args[0])
     
-    def horizontal_scrollbar_update(self,*args):
+    def on_text_horizontal_scroll(self,*args):
         self.hbar.set(*args)
     
-    def vertical_scroll(self,*args):
+    def on_vertical_scroll(self,*args):
         self.text.yview(*args)
         self.line_numbers.yview(*args)
     
-    def horizontal_scroll(self,*args):
+    def on_horizontal_scroll(self,*args):
         self.text.xview(*args)
     
     def update_line_numbers(self):

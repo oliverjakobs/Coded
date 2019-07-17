@@ -6,10 +6,18 @@ import tkinter as tk
 
 from tkinter import ttk
 from tkinter import filedialog
+from tkinter import messagebox
 
 # import own stuff
 from fileview import FileView
 from editor import Editor
+from workspace import Workspace
+
+filetypes = [
+    ("All Files", "*.*"),
+    ("Json Files", "*.json"),
+    ("Python Scripts", "*.py"),
+    ("Text Files", "*.txt")]
 
 def set_status(msg):
     global status
@@ -20,64 +28,46 @@ def set_title(title):
     root.title(title)
 
 def new_file():
-    global editor
-    editor.add_tab(name="Untitled")
+    global workspace
+    workspace.new_tab()
 
-def load_tab(filename):
-    global editor
-
-    if os.path.isfile(filename):
-        text = editor.add_tab(os.path.relpath(filename))
-        if text:
-            # TODO: Exception handling
-            with open(filename, "r") as f:
-                text.insert(1.0, f.read())
-            set_status("Opened " + filename + ".")
-        else:
-            set_status("File " + filename + " already open.")
-
-def save_tab(filename):
-    global editor
-    try:
-        with open(os.path.abspath(filename), "w") as f:
-            f.write(editor.get_text().get(1.0, tk.END))
-        set_status("Saved " + filename + ".")
-    except Exception as e:
-        set_status(e)
-
-
-def open_selected(filename):
-    global fileview
-    load_tab(fileview.focus_path())
-
+# TODO: better status desc
+# TODO: filedialog
 def open_file():
-    filename = filedialog.askopenfilename(defaultextension=".txt", 
-    filetypes= [
-        ("All Files", "*.*"),
-        ("Text Files", "*.txt"),
-        ("Python Scripts", "*.py"),
-        ("Json Files", "*.json")])
+    global workspace
+    filename = filedialog.askopenfilename(defaultextension=".txt", filetypes=filetypes)
 
-    load_tab(filename)
+    if filename:
+        result = workspace.load_tab(os.path.relpath(filename))
+        if result > 0:
+            set_status("open_file: Already Open")
+        elif result < 0:
+            set_status( "open_file: error")
+        else:
+            set_status("open_file: Success")
 
 def save():
-    global editor
-    if editor.get_name() != "Untitled":
-        save_tab(editor.get_name())
-    else:
+    global workspace
+
+    result = workspace.save_tab()
+    if result > 0:
         save_as()
+    elif result < 0:
+        set_status( "save: error")
+    else:
+        set_status("save: Success")
 
 def save_as():
-    global editor
+    global workspace
     filename = filedialog.asksaveasfilename(initialfil="Untitled.txt", defaultextension=".txt", 
-            filetypes= [
-                ("All Files", "*.*"),
-                ("Text Files", "*.txt"),
-                ("Python Scripts", "*.py"),
-                ("Json Files", "*.json")])
+    filetypes=filetypes)
 
-    save_tab(filename)
-    editor.set_name(os.path.relpath(filename))
+    if filename:
+        result = workspace.save_tab(os.path.relpath(filename))
+        if result == 0:
+            set_status("save_as: Success")
+        else:
+            set_status( "save_as: error")
 
 # setup
 root = tk.Tk()
@@ -141,21 +131,15 @@ toolbar.grid(row=0, column=0, sticky=tk.EW)
 # run_cmd.current(0)
 # run_cmd.pack(side=tk.RIGHT)
 
+# get the size of the workspace
+root.update()
+
+ws_width = root.winfo_width()
+ws_height = root.winfo_height()
+
 # workspace
-workspace = ttk.PanedWindow(root, orient=tk.HORIZONTAL)
+workspace = Workspace(root, os.getcwd(), ws_width, ws_height, orient=tk.HORIZONTAL)
 workspace.grid(row=1, column=0, sticky=tk.NSEW)
-
-relX = 0.8
-relY = 0.8
-
-# editor
-editor = Editor(workspace)
-workspace.add(editor)
-
-# fileview
-fileview = FileView(workspace, path=os.getcwd(), text="Explorer")
-fileview.tree.bind("<<TreeviewOpen>>", open_selected)
-workspace.add(fileview)
 
 # console
 console = ttk.Notebook(workspace)
@@ -170,7 +154,9 @@ status.grid(row=2, column=0, sticky=tk.EW)
 
 # Command Line Arguments
 for arg in sys.argv[1:]:
-    load_tab(arg)
+    workspace.load_tab(arg)
 
 # run
 root.mainloop()
+
+
