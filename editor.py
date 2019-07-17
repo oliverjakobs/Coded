@@ -14,7 +14,7 @@ class Editor(ttk.Notebook):
         if name in self.tab_names:
             return None
 
-        tab = NumberedFrame(self, wrap=tk.NONE, line_numbers=True)
+        tab = NumberedFrame(self, wrap=tk.NONE)
         self.add(tab, text=name)
         self.select(tab)
 

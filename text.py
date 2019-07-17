@@ -3,9 +3,7 @@ from tkinter import ttk
 from tkinter import font as tkfont
 from tkinter import TclError
 
-event_data = None
-
-class BetterText(tk.Text):
+class TclText(tk.Text):
     """Allows intercepting Text commands at Tcl-level"""
     def __init__(self, master=None, cnf={}, read_only=False, **kw):
         tk.Text.__init__(self, master=master, cnf=cnf, **kw)
@@ -123,36 +121,36 @@ class BetterText(tk.Text):
 
 class NumberedFrame(ttk.Frame):
     "Decorates text with scrollbars, line numbers and print margin"
-    def __init__(self, master, line_numbers=False, line_length_margin=0, first_line=1, **text_options):
+    def __init__(self, master, first_line=1, **text_options):
         ttk.Frame.__init__(self, master=master)
         
-        self.text = BetterText(self, text_options)
+        self.text = TclText(self, text_options)
         self.text.grid(row=0, column=1, sticky=tk.NSEW)
         
         self.line_numbers = tk.Text(self, width=4, padx=4, pady=2,
-                               highlightthickness=0, bd=0, takefocus=False,
-                               font=self.text['font'],
-                               background='#e0e0e0', foreground='#999999')
-
+                            highlightthickness=0, bd=0, takefocus=False,
+                            font=self.text['font'],
+                            background='#e0e0e0', foreground='#999999')
+        
         # margin will be gridded later
         self.set_line_numbers(first_line)
-
-        self._vbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
-        self._vbar.grid(row=0, column=2, sticky=tk.NSEW)
         
-        self._hbar = ttk.Scrollbar(self, orient=tk.HORIZONTAL)
-        self._hbar.grid(row=1, column=0, sticky=tk.NSEW, columnspan=2)
+        self.vbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
+        self.vbar.grid(row=0, column=2, sticky=tk.NSEW)
         
-        self.text['yscrollcommand'] = self._vertical_scrollbar_update  
-        self.text['xscrollcommand'] = self._horizontal_scrollbar_update    
-        self._vbar['command'] = self._vertical_scroll 
-        self._hbar['command'] = self._horizontal_scroll
+        self.hbar = ttk.Scrollbar(self, orient=tk.HORIZONTAL)
+        self.hbar.grid(row=1, column=0, sticky=tk.NSEW, columnspan=2)
+        
+        self.text['yscrollcommand'] = self.vertical_scrollbar_update  
+        self.text['xscrollcommand'] = self.horizontal_scrollbar_update    
+        self.vbar['command'] = self.vertical_scroll 
+        self.hbar['command'] = self.horizontal_scroll
         
         self.columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
         
-        self.text.bind("<<TextChange>>", self._text_changed, True)
-
+        self.text.bind("<<TextChange>>", self.text_changed, True)
+    
     def focus_set(self):
         self.text.focus_set()
     
@@ -164,30 +162,34 @@ class NumberedFrame(ttk.Frame):
             self.line_numbers.grid(row=0, column=0, sticky=tk.NSEW)
             self.update_line_numbers()
     
-    def _text_changed(self, event):
+    def text_changed(self, event):
         self.update_line_numbers()
     
-    def _vertical_scrollbar_update(self, *args):
-        self._vbar.set(*args)
+    def vertical_scrollbar_update(self, *args):
+        self.vbar.set(*args)
         self.line_numbers.yview(tk.MOVETO, args[0])
-        
-    def _horizontal_scrollbar_update(self,*args):
-        self._hbar.set(*args)
     
-    def _vertical_scroll(self,*args):
+    def horizontal_scrollbar_update(self,*args):
+        self.hbar.set(*args)
+    
+    def vertical_scroll(self,*args):
         self.text.yview(*args)
         self.line_numbers.yview(*args)
-        
-    def _horizontal_scroll(self,*args):
+    
+    def horizontal_scroll(self,*args):
         self.text.xview(*args)
     
     def update_line_numbers(self):
         text_line_count = int(self.text.index("end-1c").split(".")[0])
-        
+        # save yview position
+        yview = self.line_numbers.yview()
+        # update line numbers
         self.line_numbers.config(state='normal')
         self.line_numbers.delete("1.0", "end")
         for i in range(text_line_count):
             self.line_numbers.insert("end", str(i + self.first_line).rjust(3))
             if i < text_line_count-1:
-                self.line_numbers.insert("end", "\n") 
+                self.line_numbers.insert("end", "\n")
+        
+        self.line_numbers.yview(tk.MOVETO, yview[0])
         self.line_numbers.config(state='disabled')
