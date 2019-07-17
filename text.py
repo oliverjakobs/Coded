@@ -4,7 +4,7 @@ from tkinter import font as tkfont
 from tkinter import TclError
 
 class TclText(tk.Text):
-    """Allows intercepting Text commands at Tcl-level"""
+    # Allows intercepting Text commands at Tcl-level
     def __init__(self, master=None, cnf={}, read_only=False, **kw):
         tk.Text.__init__(self, master=master, cnf=cnf, **kw)
         
@@ -41,7 +41,6 @@ class TclText(tk.Text):
             if (str(e).lower() == '''text doesn't contain any characters tagged with "sel"'''
                 and operation in ["delete", "index", "get"] 
                 and args in [("sel.first", "sel.last"), ("sel.first",)]):
-                
                 pass
             else:
                 traceback.print_exc()
@@ -76,13 +75,13 @@ class TclText(tk.Text):
             self.direct_delete(index1, index2)
     
     def _is_erroneous_delete(self, index1, index2):
-        """Paste can cause deletes where index1 is sel.start but text has no selection. This would cause errors"""
+        # Paste can cause deletes where index1 is sel.start but text has no selection. This would cause errors
         return index1.startswith("sel.") and not self.has_selection()
     
     def direct_mark(self, *args):
         self._original_mark(*args)
         
-        if args[:2] == ('set', 'insert'):
+        if args[:2] == ("set", "insert"):
             self.event_generate("<<CursorMove>>")
     
     def index_sel_first(self):
@@ -120,17 +119,26 @@ class TclText(tk.Text):
 
 
 class NumberedFrame(ttk.Frame):
-    "Decorates text with scrollbars, line numbers and print margin"
+    # Decorates text with scrollbars and line numbers
     def __init__(self, master, first_line=1, **text_options):
         ttk.Frame.__init__(self, master=master)
-        
+  
         self.text = TclText(self, text_options)
         self.text.grid(row=0, column=1, sticky=tk.NSEW)
+
+        options = {
+            "bd" : 0,
+            "width" : 4,
+            "takefocus" : False,
+            "highlightthickness" : 0,
+            "font" : self.text["font"],
+            "background" : "#e0e0e0",
+            "foreground" : "#999999"
+        }
+
+        options.update(text_options)
         
-        self.line_numbers = tk.Text(self, width=4, padx=4, pady=2,
-                            highlightthickness=0, bd=0, takefocus=False,
-                            font=self.text['font'],
-                            background='#e0e0e0', foreground='#999999')
+        self.line_numbers = tk.Text(self, **options)
         
         # margin will be gridded later
         self.set_line_numbers(first_line)
@@ -141,10 +149,10 @@ class NumberedFrame(ttk.Frame):
         self.hbar = ttk.Scrollbar(self, orient=tk.HORIZONTAL)
         self.hbar.grid(row=1, column=0, sticky=tk.NSEW, columnspan=2)
         
-        self.text['yscrollcommand'] = self.vertical_scrollbar_update  
-        self.text['xscrollcommand'] = self.horizontal_scrollbar_update    
-        self.vbar['command'] = self.vertical_scroll 
-        self.hbar['command'] = self.horizontal_scroll
+        self.text["yscrollcommand"] = self.vertical_scrollbar_update  
+        self.text["xscrollcommand"] = self.horizontal_scrollbar_update    
+        self.vbar["command"] = self.vertical_scroll 
+        self.hbar["command"] = self.horizontal_scroll
         
         self.columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
@@ -184,12 +192,12 @@ class NumberedFrame(ttk.Frame):
         # save yview position
         yview = self.line_numbers.yview()
         # update line numbers
-        self.line_numbers.config(state='normal')
-        self.line_numbers.delete("1.0", "end")
+        self.line_numbers.config(state=tk.NORMAL)
+        self.line_numbers.delete("1.0", tk.END)
         for i in range(text_line_count):
-            self.line_numbers.insert("end", str(i + self.first_line).rjust(3))
+            self.line_numbers.insert(tk.END, str(i + self.first_line).rjust(3))
             if i < text_line_count-1:
-                self.line_numbers.insert("end", "\n")
+                self.line_numbers.insert(tk.END, "\n")
         
         self.line_numbers.yview(tk.MOVETO, yview[0])
-        self.line_numbers.config(state='disabled')
+        self.line_numbers.config(state=tk.DISABLED)

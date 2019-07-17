@@ -6,7 +6,7 @@ from text import NumberedFrame
 class Editor(ttk.Notebook):
     def __init__(self, master):
         ttk.Notebook.__init__(self, master)
-        self.bind("<<NotebookTabChanged>>", self.on_event)
+        self.bind("<<NotebookTabChanged>>", self.tab_changed)
         self.tab_texts = []
         self.tab_names = []
 
@@ -14,7 +14,14 @@ class Editor(ttk.Notebook):
         if name in self.tab_names:
             return None
 
-        tab = NumberedFrame(self, wrap=tk.NONE)
+        options = {
+            "wrap" : tk.NONE,
+            "borderwidth" : 0,
+            "padx" : 5,
+            "pady" : 5
+        }
+
+        tab = NumberedFrame(self, **options)
         self.add(tab, text=name)
         self.select(tab)
 
@@ -24,7 +31,7 @@ class Editor(ttk.Notebook):
 
         return tab.text
 
-    def on_event(self, event):
+    def tab_changed(self, event):
         pass
 
     def get_text(self):

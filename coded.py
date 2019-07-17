@@ -15,13 +15,9 @@ def set_status(msg):
     global status
     status["text"] = msg
 
-
-def set_title(name=None):
+def set_title(title):
     global root
-    if name:
-        root.title(name + " - Coded")
-    else:
-        root.title("Untitled - Coded")
+    root.title(title)
 
 def new_file():
     global editor
@@ -137,12 +133,12 @@ menu.add_cascade(label="Help", menu=menu_help)
 toolbar = tk.Frame(root, bg="grey")
 toolbar.grid(row=0, column=0, sticky=tk.EW)
 
-button_run = ttk.Button(toolbar, text="Run")
-button_run.pack(side=tk.RIGHT)
+# button_run = ttk.Button(toolbar, text="Run")
+# button_run.pack(side=tk.RIGHT)
 
-run_cmd = ttk.Combobox(toolbar, values=["Choose Command", "Manage..."])
-run_cmd.current(0)
-run_cmd.pack(side=tk.RIGHT)
+# run_cmd = ttk.Combobox(toolbar, values=["Choose Command", "Manage..."])
+# run_cmd.current(0)
+# run_cmd.pack(side=tk.RIGHT)
 
 # workspace
 workspace = ttk.PanedWindow(root, orient=tk.VERTICAL)
