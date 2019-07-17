@@ -11,6 +11,11 @@ from tkinter import filedialog
 from fileview import FileView
 from editor import Editor
 
+def set_status(msg):
+    global status
+    status["text"] = msg
+
+
 def set_title(name=None):
     global root
     if name:
@@ -27,8 +32,22 @@ def load_tab(filename):
 
     if os.path.isfile(filename):
         text = editor.add_tab(os.path.relpath(filename))
-        with open(filename, "r") as f:
-            text.insert(1.0, f.read())
+        if text:
+            with open(filename, "r") as f:
+                text.insert(1.0, f.read())
+            set_status("Opened " + filename + ".")
+        else:
+            set_status("File " + filename + " already open.")
+
+def save_tab(filename):
+    global editor
+    try:
+        with open(os.path.abspath(filename), "w") as f:
+            f.write(editor.get_text().get(1.0, tk.END))
+        set_status("Saved " + filename + ".")
+    except Exception as e:
+        set_status(e)
+
 
 def open_selected(filename):
     global fileview
@@ -47,28 +66,21 @@ def open_file():
 def save():
     global editor
     if editor.get_name() != "Untitled":
-        try:
-            with open(os.path.abspath(editor.get_name()), "w") as f:
-                f.write(editor.get_text().get(1.0, tk.END))
-        except Exception as e:
-            print(e)
+        save_tab(editor.get_name())
     else:
         save_as()
 
 def save_as():
     global editor
-    try:
-        filename = filedialog.asksaveasfilename(initialfil="Untitled.txt", defaultextension=".txt", 
+    filename = filedialog.asksaveasfilename(initialfil="Untitled.txt", defaultextension=".txt", 
             filetypes= [
                 ("All Files", "*.*"),
                 ("Text Files", "*.txt"),
                 ("Python Scripts", "*.py"),
                 ("Json Files", "*.json")])
-        with open(filename, "w") as f:
-            f.write(editor.get_text().get(1.0, tk.END))
-        editor.set_name(os.path.relpath(filename))
-    except Exception as e:
-        print(e)
+
+    save_tab(filename)
+    editor.set_name(os.path.relpath(filename))
 
 # setup
 root = tk.Tk()
