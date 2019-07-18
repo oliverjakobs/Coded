@@ -29,7 +29,7 @@ def set_title(title):
 
 def new_file():
     global workspace
-    workspace.new_tab()
+    workspace.load_tab("Untitled", True)
 
 # TODO: better status desc
 # TODO: filedialog

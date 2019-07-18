@@ -6,11 +6,11 @@ from text import NumberedFrame
 class Editor(ttk.Notebook):
     def __init__(self, master, **kw):
         ttk.Notebook.__init__(self, master, **kw)
-        self.bind("<<NotebookTabChanged>>", self.on_tab_changed)
         self.tab_texts = []
         self.tab_names = []
+        self.new_tabs = []
 
-    def add_tab(self, name):
+    def add_tab(self, name, new=False):
         if name in self.tab_names:
             return None
 
@@ -28,6 +28,7 @@ class Editor(ttk.Notebook):
         # add to list
         self.tab_texts.append(tab.text)
         self.tab_names.append(name)
+        self.new_tabs.append(name)
 
         return tab.text
 
@@ -41,9 +42,6 @@ class Editor(ttk.Notebook):
         else:
             self.forget("current")
 
-    def on_tab_changed(self, event):
-        pass
-
     def get_text(self):
         return self.tab_texts[self.index("current")]
 
@@ -54,5 +52,11 @@ class Editor(ttk.Notebook):
 
     def get_name(self):
         return self.tab("current", option="text")
+
+    def get_index(self):
+        return self.index("current")
+
+    def get_new(self, name):
+        return name in self.new_tabs
 
 

@@ -23,6 +23,7 @@ class Workspace(ttk.PanedWindow):
 
         # events
         # TODO: <Configure> event
+        self.editor.bind("<<NotebookTabChanged>>", self.on_tab_changed)
         self.fileview.tree.bind("<<TreeviewOpen>>", self.on_open)
 
         # print("Workspace loaded:")
@@ -31,12 +32,16 @@ class Workspace(ttk.PanedWindow):
 
     def on_open(self, *args):
         self.load_tab(self.fileview.focus_path())
+    
+    def on_tab_changed(self, event):
+        #print(self.editor.get_index())
+        pass
 
-    # TODO: merge new_tab and load_tab
-    def new_tab(self):
-        self.editor.add_tab(name="Untitled")
+    def load_tab(self, filename, new_tab=False):
+        if new_tab:
+            self.editor.add_tab(filename, new_tab)
+            return 0
 
-    def load_tab(self, filename):
         try:
             text = self.editor.add_tab(filename)
             if text:
@@ -52,13 +57,12 @@ class Workspace(ttk.PanedWindow):
             self.editor.delete_tab(filename)
         return -1   
 
-
     def save_tab(self, filename=None, save_as=None):
         try:
             if not filename:
                 # TODO: better handling for new files
                 filename = self.editor.get_name()
-                if filename == "Untitled":
+                if self.editor.get_new(filename):
                     return 1
             with open(filename, "w") as f:
                 f.write(self.editor.get_text().get(1.0, tk.END))
