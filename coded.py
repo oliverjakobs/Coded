@@ -75,6 +75,8 @@ root.title("Coded")
 root.geometry("1200x800")
 # root.iconbitmap("icon.ico")
 
+root.state("zoomed")
+
 root.rowconfigure(1, weight=1)
 root.columnconfigure(0, weight=1)
 
