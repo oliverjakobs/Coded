@@ -56,3 +56,4 @@ class Editor(ttk.Notebook):
         return name in self._new_tabs
 
 
+

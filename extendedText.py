@@ -1,7 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import TclError
+import traceback
 
+# TODO: work EnhancedText into BetterText
 class BetterText(tk.Text):
     # Allows intercepting Text commands at Tcl-level
     def __init__(self, master=None, cnf={}, read_only=False, **kw):
@@ -17,6 +19,23 @@ class BetterText(tk.Text):
         self._original_insert = self._register_tk_proxy_function("insert", self.intercept_insert)
         self._original_delete = self._register_tk_proxy_function("delete", self.intercept_delete)
         self._original_mark = self._register_tk_proxy_function("mark", self.intercept_mark)
+
+        # events
+        self.bind("<Control-z>", lambda e: self.edit_undo)
+        self.bind("<Control-y>", lambda e: self.edit_redo)
+
+
+    def unbind(self, sequence, funcid=None):
+        '''See:
+            http://stackoverflow.com/questions/6433369/deleting-and-changing-a-tkinter-event-binding-in-python
+        '''
+        if not funcid:
+            self.tk.call('bind', self._w, sequence, '')
+            return
+        func_callbacks = self.tk.call('bind', self._w, sequence, None).split('\n')
+        new_callbacks = [l for l in func_callbacks if l[6:6 + len(funcid)] != funcid]
+        self.tk.call('bind', self._w, sequence, '\n'.join(new_callbacks))
+        self.deletecommand(funcid)
     
     def _register_tk_proxy_function(self, operation, function):
         self._tk_proxies[operation] = function
@@ -114,4 +133,25 @@ class BetterText(tk.Text):
     def direct_delete(self, index1, index2=None):
         self._original_delete(index1, index2)
         self.event_generate("<<TextChange>>")
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.geometry("600x400")
+
+    def on_event_root(*args):
+        print("Root")
+
+    def on_event_text(*args):
+        print("Text")
+
+    text = tk.Text(root)
+    text.pack()
+
+    text.tk.call("bind", text._w, "<Control-o>", "[" + text._w +" insert \"Hello\"]")
+    #text.unbind("<Control-o>")
+    root.bind("<Control-o>", on_event_root)
+
+
+    root.mainloop()
 

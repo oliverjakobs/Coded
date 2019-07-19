@@ -10,6 +10,7 @@ from tkinter import messagebox
 
 # import own stuff
 from extendedTk import FadingLabel
+from extendedText import BetterText
 from fileview import FileView
 from editor import Editor
 from workspace import Workspace
@@ -79,10 +80,10 @@ class Coded(tk.Tk):
         self.status.grid(row=2, column=0, sticky=tk.EW)
 
         # events
-        self.bind("<Control-n>", self.new_file)
-        self.bind("<Control-o>", self.open_file)
-        self.bind("<Control-s>", self.save)
-        self.bind("<Control-S>", self.save_as)
+        self.bind_all("<Control-n>", self.new_file)
+        self.bind_all("<Control-t>", self.open_file)
+        self.bind_all("<Control-s>", self.save)
+        self.bind_all("<Control-S>", self.save_as)
 
         # Command Line Arguments
         for arg in sys.argv[1:]:
@@ -96,7 +97,7 @@ class Coded(tk.Tk):
         menu_file = tk.Menu(menu, tearoff=0)
         menu_file.add_command(label="New File", accelerator="Ctrl+N", command=self.new_file)
         menu_file.add_separator()
-        menu_file.add_command(label="Open File", accelerator="Ctrl+O", command=self.open_file)
+        menu_file.add_command(label="Open File", accelerator="Ctrl+T", command=self.open_file)
         menu_file.add_separator()
         menu_file.add_command(label="Save", accelerator="Ctrl+S", command=self.save)
         menu_file.add_command(label="Save As", accelerator="Ctrl+Shift+S", command=self.save_as)

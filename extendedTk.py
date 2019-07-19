@@ -2,6 +2,7 @@ import tkinter as tk
 
 from tkinter import ttk
 from extendedText import BetterText
+from tktextext import EnhancedText
 
 class AutoScrollbar(ttk.Scrollbar):
     def __init__(self, master=None, **kw):
@@ -24,13 +25,14 @@ class FadingLabel(tk.Label):
     def write(self, msg):
         self["text"] = msg
         self.after(2500, lambda: self.config(text=self._idle_text))
-
+        
+# TODO: fix scrolling line numbers
 class NumberedFrame(ttk.Frame):
     # Decorates text with scrollbars and line numbers
     def __init__(self, master, first_line=1, **text_options):
         ttk.Frame.__init__(self, master=master)
   
-        self.text = BetterText(self, text_options)
+        self.text = EnhancedText(self, text_options)
         self.text.grid(row=0, column=1, sticky=tk.NSEW)
 
         options = {
