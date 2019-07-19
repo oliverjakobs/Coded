@@ -1,53 +1,49 @@
 import tkinter as tk
 from tkinter import ttk
 
-from text import NumberedFrame
+from extendedTk import NumberedFrame
 
 class Editor(ttk.Notebook):
     def __init__(self, master, **kw):
         ttk.Notebook.__init__(self, master, **kw)
-        self.tab_texts = []
-        self.tab_names = []
-        self.new_tabs = []
+        self._tab_texts = []
+        self._tab_names = []
+        self._new_tabs = []
 
-    def add_tab(self, name, new=False):
-        if name in self.tab_names:
+    def add_tab(self, name, new=False, **tab_options):
+        if name in self._tab_names:
             return None
-
-        options = {
-            "wrap" : tk.NONE,
-            "borderwidth" : 0,
-            "padx" : 5,
-            "pady" : 5
-        }
-
-        tab = NumberedFrame(self, **options)
+        
+        tab = NumberedFrame(self, **tab_options)
         self.add(tab, text=name)
         self.select(tab)
 
         # add to list
-        self.tab_texts.append(tab.text)
-        self.tab_names.append(name)
-        self.new_tabs.append(name)
+        self._tab_texts.append(tab.text)
+        self._tab_names.append(name)
+        if new:
+            self._new_tabs.append(name)
 
         return tab.text
 
     def delete_tab(self, name=None):
         if name:
-            if name in self.tab_names:
-                index = self.tab_names.index(name)
+            if name in self._tab_names:
+                index = self._tab_names.index(name)
+                self._tab_names.pop(index)
+                self._tab_texts.pop(index)
                 self.forget(index)
-                self.tab_names.pop(index)
-                self.tab_texts.pop(index)
         else:
+            self._tab_texts.pop(self.index("current"))
+            self._tab_names.pop(self.index("current"))
             self.forget("current")
 
     def get_text(self):
-        return self.tab_texts[self.index("current")]
+        return self._tab_texts[self.index("current")]
 
     def set_name(self, name):
-        if self.tab_names[self.index("current")] != name:
-            self.tab_names[self.index("current")] = name
+        if self._tab_names[self.index("current")] != name:
+            self._tab_names[self.index("current")] = name
             self.tab("current", text=name)
 
     def get_name(self):
@@ -57,6 +53,6 @@ class Editor(ttk.Notebook):
         return self.index("current")
 
     def get_new(self, name):
-        return name in self.new_tabs
+        return name in self._new_tabs
 
 

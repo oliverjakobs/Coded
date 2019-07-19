@@ -1,9 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter import font as tkfont
 from tkinter import TclError
-
-from autscroll import AutoScrollbar
 
 class BetterText(tk.Text):
     # Allows intercepting Text commands at Tcl-level
@@ -118,86 +115,3 @@ class BetterText(tk.Text):
         self._original_delete(index1, index2)
         self.event_generate("<<TextChange>>")
 
-
-class NumberedFrame(ttk.Frame):
-    # Decorates text with scrollbars and line numbers
-    def __init__(self, master, first_line=1, **text_options):
-        ttk.Frame.__init__(self, master=master)
-  
-        self.text = BetterText(self, text_options)
-        self.text.grid(row=0, column=1, sticky=tk.NSEW)
-
-        options = {
-            "bd" : 0,
-            "width" : 4,
-            "takefocus" : False,
-            "highlightthickness" : 0,
-            "font" : self.text["font"],
-            "background" : "#e0e0e0",
-            "foreground" : "#999999"
-        }
-
-        options.update(text_options)
-        
-        self.line_numbers = tk.Text(self, **options)
-        self.set_line_numbers(first_line)
-        
-        self.scrollY = AutoScrollbar(self, orient=tk.VERTICAL)
-        self.scrollX = AutoScrollbar(self, orient=tk.HORIZONTAL)
-
-        self.text["yscrollcommand"] = self.on_text_vertical_scroll
-        self.text["xscrollcommand"] = self.on_text_horizontal_scroll  
-
-        self.scrollY["command"] = self.on_vertical_scroll 
-        self.scrollX["command"] = self.on_horizontal_scroll
-
-        self.scrollY.grid(row=0, column=2, sticky=tk.NSEW)
-        self.scrollX.grid(row=1, column=0, sticky=tk.NSEW, columnspan=2)
-        
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
-        
-        self.text.bind("<<TextChange>>", self.on_text_changed, True)
-    
-    def focus_set(self):
-        self.text.focus_set()
-    
-    def set_line_numbers(self, first):
-        self.first_line = first
-        if self.line_numbers.winfo_ismapped():
-            self.line_numbers.grid_forget()
-        else:
-            self.line_numbers.grid(row=0, column=0, sticky=tk.NSEW)
-            self.update_line_numbers()
-    
-    def on_text_changed(self, *args):
-        self.update_line_numbers()
-    
-    def on_text_vertical_scroll(self, first, last):
-        self.scrollY.set(first, last)
-        self.line_numbers.yview(tk.MOVETO, first)
-    
-    def on_text_horizontal_scroll(self, first, last):
-        self.scrollX.set(first, last)
-    
-    def on_vertical_scroll(self,*args):
-        self.text.yview(*args)
-        self.line_numbers.yview(*args)
-    
-    def on_horizontal_scroll(self,*args):
-        self.text.xview(*args)
-    
-    def update_line_numbers(self):
-        text_line_count = int(self.text.index("end-1c").split(".")[0])
-        # save yview position
-        yview = self.line_numbers.yview()
-        # update line numbers
-        self.line_numbers.config(state=tk.NORMAL)
-        self.line_numbers.delete("1.0", tk.END)
-        for i in range(text_line_count):
-            self.line_numbers.insert(tk.END, str(i + self.first_line).rjust(3))
-            if i < text_line_count-1:
-                self.line_numbers.insert(tk.END, "\n")
-        
-        self.line_numbers.yview(tk.MOVETO, yview[0])
-        self.line_numbers.config(state=tk.DISABLED)

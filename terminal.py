@@ -1,20 +1,13 @@
 import subprocess
 import tkinter as tk
 
-
-def call(cmd, cwd):
-    with subprocess.Popen(cmd, cwd=self.caller, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True) as p:
-        output, errors = p.communicate()
-        return output
-        
-
 # TODO: style/appearance 
 # TODO: call stack
 class Terminal(tk.Frame):
     def __init__(self, master=None, caller=None, cnf={}, **kw):
         tk.Frame.__init__(self, master, cnf, **kw)
 
-        self.caller = caller
+        self._caller = caller
 
         self.output = tk.Text(self, state='disabled')
         self.label = tk.Label(self, text=caller + ">")
@@ -40,9 +33,11 @@ class Terminal(tk.Frame):
 
     def execute(self, *args):
         cmd = self.get_cmd()
-        self.write(self.caller + "> " + cmd)
-        self.write(call(cmd, caller).decode("utf-8"))
-
+        self.write(self._caller + "> " + cmd)
+        with subprocess.Popen(cmd, cwd=self._caller, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True) as p:
+            output, errors = p.communicate()
+            self.write(output.decode("utf-8"))
+            self.write(errors.decode("utf-8"))
 
 
 if __name__ == "__main__":

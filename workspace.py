@@ -51,37 +51,37 @@ class Workspace(ttk.PanedWindow):
 
     def load_tab(self, filename, new_tab=False):
         if new_tab:
-            self.editor.add_tab(filename, new_tab)
-            return 0
+            self.editor.add_tab(filename, new_tab, wrap=tk.NONE, bd=0, padx=5, pady=5)
+            return 0, filename
 
         try:
-            text = self.editor.add_tab(filename)
+            text = self.editor.add_tab(filename, wrap=tk.NONE, bd=0, padx=5, pady=5)
             if text:
                 with open(filename, "r") as f:
                     text.insert(1.0, f.read())
-                return 0
-            return 1
+                return 0, filename
+            return 1, filename
         except UnicodeDecodeError as e:
             messagebox.showerror("UnicodeDecodeError", "Could not open {0}: \n{1}".format(filename, e))
-            self.editor.delete_tab(filename)   
+            self.editor.delete_tab()   
         except FileNotFoundError as e:
             messagebox.showerror("FileNotFoundError", "Could not open {0}: \n{1}".format(filename, e))
             self.editor.delete_tab(filename)
-        return -1   
+        return -1, filename  
 
-    def save_tab(self, filename=None, save_as=None):
+    def save_tab(self, filename=None):
         try:
             if not filename:
                 filename = self.editor.get_name()
                 if self.editor.get_new(filename):
-                    return 1
+                    return 1, filename
             with open(filename, "w") as f:
                 f.write(self.editor.get_text().get(1.0, tk.END))
             self.editor.set_name(filename)
-            return 0
+            return 0, filename
         except Exception as e:
             messagebox.showerror("Error", "Could not save {0}: \n{1}".format(filename, e))
-        return -1
+        return -1, filename
 
 
         

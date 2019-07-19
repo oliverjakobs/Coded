@@ -2,7 +2,7 @@ import os
 import tkinter as tk
 from tkinter import ttk
 
-from autscroll import AutoScrollbar
+from extendedTk import AutoScrollbar
 
 class FileView(ttk.Frame):
     def __init__(self, master, path, text):
