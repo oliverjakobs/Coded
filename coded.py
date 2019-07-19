@@ -15,6 +15,9 @@ from editor import Editor
 from workspace import Workspace
 
 
+# TODO: ctrl-o newline?
+# TODO: style/appearance 
+
 class Coded(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
@@ -132,7 +135,6 @@ class Coded(tk.Tk):
     def new_file(self, *args):
          self.workspace.load_tab("Untitled", True)
 
-    # TODO: better status desc
     def open_file(self, *args):
         filename = filedialog.askopenfilename(**self._filedialog_options)
 

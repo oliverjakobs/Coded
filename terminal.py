@@ -1,7 +1,6 @@
 import subprocess
 import tkinter as tk
 
-# TODO: style/appearance 
 # TODO: call stack
 class Terminal(tk.Frame):
     def __init__(self, master=None, caller=None, cnf={}, **kw):
