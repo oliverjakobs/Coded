@@ -2,18 +2,20 @@ import os
 import tkinter as tk
 from tkinter import ttk
 
-from autscroll import autoscroll
+from autscroll import AutoScrollbar
 
 class FileView(ttk.Frame):
     def __init__(self, master, path, text):
         ttk.Frame.__init__(self, master)
         
         # Setup tree and its scrollbars
-        scrollY = ttk.Scrollbar(self, orient=tk.VERTICAL)
-        scrollX = ttk.Scrollbar(self, orient=tk.HORIZONTAL)
+        scrollY = AutoScrollbar(self, orient=tk.VERTICAL)
+        scrollX = AutoScrollbar(self, orient=tk.HORIZONTAL)
 
-        self.tree = ttk.Treeview(self, yscrollcommand=lambda f, l:autoscroll(scrollY, f, l),
-                                       xscrollcommand=lambda f, l:autoscroll(scrollX, f, l))
+        self.tree = ttk.Treeview(self)
+
+        self.tree["yscrollcommand"] = scrollY.set
+        self.tree["xscrollcommand"] = scrollX.set                                
 
         scrollY["command"] = self.tree.yview
         scrollX["command"] = self.tree.xview

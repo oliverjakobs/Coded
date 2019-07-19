@@ -3,7 +3,9 @@ from tkinter import ttk
 from tkinter import font as tkfont
 from tkinter import TclError
 
-class TclText(tk.Text):
+from autscroll import AutoScrollbar
+
+class BetterText(tk.Text):
     # Allows intercepting Text commands at Tcl-level
     def __init__(self, master=None, cnf={}, read_only=False, **kw):
         tk.Text.__init__(self, master=master, cnf=cnf, **kw)
@@ -117,13 +119,12 @@ class TclText(tk.Text):
         self.event_generate("<<TextChange>>")
 
 
-
 class NumberedFrame(ttk.Frame):
     # Decorates text with scrollbars and line numbers
     def __init__(self, master, first_line=1, **text_options):
         ttk.Frame.__init__(self, master=master)
   
-        self.text = TclText(self, text_options)
+        self.text = BetterText(self, text_options)
         self.text.grid(row=0, column=1, sticky=tk.NSEW)
 
         options = {
@@ -139,24 +140,22 @@ class NumberedFrame(ttk.Frame):
         options.update(text_options)
         
         self.line_numbers = tk.Text(self, **options)
-        
-        # margin will be gridded later
         self.set_line_numbers(first_line)
         
-        # TODO: Autoscroll
-        self.vbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
-        self.vbar.grid(row=0, column=2, sticky=tk.NSEW)
-        
-        self.hbar = ttk.Scrollbar(self, orient=tk.HORIZONTAL)
-        self.hbar.grid(row=1, column=0, sticky=tk.NSEW, columnspan=2)
-        
+        self.scrollY = AutoScrollbar(self, orient=tk.VERTICAL)
+        self.scrollX = AutoScrollbar(self, orient=tk.HORIZONTAL)
+
         self.text["yscrollcommand"] = self.on_text_vertical_scroll
-        self.text["xscrollcommand"] = self.on_text_horizontal_scroll   
-        self.vbar["command"] = self.on_vertical_scroll 
-        self.hbar["command"] = self.on_horizontal_scroll
+        self.text["xscrollcommand"] = self.on_text_horizontal_scroll  
+
+        self.scrollY["command"] = self.on_vertical_scroll 
+        self.scrollX["command"] = self.on_horizontal_scroll
+
+        self.scrollY.grid(row=0, column=2, sticky=tk.NSEW)
+        self.scrollX.grid(row=1, column=0, sticky=tk.NSEW, columnspan=2)
         
-        self.columnconfigure(1, weight=1)
-        self.rowconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
         
         self.text.bind("<<TextChange>>", self.on_text_changed, True)
     
@@ -174,12 +173,12 @@ class NumberedFrame(ttk.Frame):
     def on_text_changed(self, *args):
         self.update_line_numbers()
     
-    def on_text_vertical_scroll(self, *args):
-        self.vbar.set(*args)
-        self.line_numbers.yview(tk.MOVETO, args[0])
+    def on_text_vertical_scroll(self, first, last):
+        self.scrollY.set(first, last)
+        self.line_numbers.yview(tk.MOVETO, first)
     
-    def on_text_horizontal_scroll(self,*args):
-        self.hbar.set(*args)
+    def on_text_horizontal_scroll(self, first, last):
+        self.scrollX.set(first, last)
     
     def on_vertical_scroll(self,*args):
         self.text.yview(*args)

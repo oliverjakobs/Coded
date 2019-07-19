@@ -4,9 +4,10 @@ from tkinter import messagebox
 
 from editor import Editor
 from fileview import FileView
+from terminal import Terminal
 
 class Workspace(ttk.PanedWindow):
-    def __init__(self, master, location, width, height, proportion=0.8, **kw):
+    def __init__(self, master, location, width, height, hor_prop=0.86, vert_prop=0.8, **kw):
         ttk.PanedWindow.__init__(self, master, width=width, height=height, **kw)
 
         self.location = location
@@ -14,11 +15,22 @@ class Workspace(ttk.PanedWindow):
         self.height = height
 
         # content
-        self.editor = Editor(self, width=int(width * proportion))
+        pane = ttk.PanedWindow(self, orient=tk.VERTICAL)
+
+        editor_width = int(width * hor_prop)
+        editor_height = int(height * vert_prop)
+
+        self.editor = Editor(pane, width=editor_width, height=editor_height)
         self.fileview = FileView(self, path=location, text="Explorer")
+        self.console = ttk.Notebook(self)
+
+        self.console.add(Terminal(self.console, caller=location), text="Terminal")
 
         # adding content to the workspace
-        self.add(self.editor)
+        pane.add(self.editor)
+        pane.add(self.console)
+
+        self.add(pane)
         self.add(self.fileview)
 
         # events
@@ -60,7 +72,6 @@ class Workspace(ttk.PanedWindow):
     def save_tab(self, filename=None, save_as=None):
         try:
             if not filename:
-                # TODO: better handling for new files
                 filename = self.editor.get_name()
                 if self.editor.get_new(filename):
                     return 1
