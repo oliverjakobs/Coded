@@ -22,7 +22,7 @@ def classifyws(s, tabwidth):
 def index2line(index):
     return int(float(index))
 
-# TODO: work EnhancedText into BetterText
+
 class BetterText(tk.Text):
     # Allows intercepting Text commands at Tcl-level
     def __init__(self, master=None, cnf={}, read_only=False, **kw):
@@ -54,7 +54,7 @@ class BetterText(tk.Text):
         # Make sure that Tk's double-click and next/previous word
         # operations use our definition of a word (i.e. an identifier)
         self.tk.call('tcl_wordBreakAfter', 'a b', 0) # make sure word.tcl is loaded
-        self.tk.call('set', 'tcl_wordchars',     u'[a-zA-Z0-9]')
+        self.tk.call('set', 'tcl_wordchars', u'[a-zA-Z0-9]')
         self.tk.call('set', 'tcl_nonwordchars', u'[^a-zA-Z0-9]')
 
         # events
@@ -547,10 +547,11 @@ if __name__ == "__main__":
     text = tk.Text(root)
     text.pack()
 
-    text.tk.call("bind", text._w, "<Control-o>", "[" + text._w +" insert \"Hello\"]")
+    #text.tk.call("bind", text._w, "<Control-o>", "[" + text._w +" insert \"Hello\"]")
     #text.unbind("<Control-o>")
     root.bind("<Control-o>", on_event_root)
 
 
     root.mainloop()
+
 

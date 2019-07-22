@@ -23,7 +23,7 @@ class Coded(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         # setup
-        self.title("Coded")
+        self.title("Capricorn")
         self.geometry("1200x800")
         # self.iconbitmap("icon.ico")
 
