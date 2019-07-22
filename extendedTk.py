@@ -15,7 +15,7 @@ class AutoScrollbar(ttk.Scrollbar):
             self.grid_remove()
         else:
             self.grid()
-        super(ttk.Scrollbar, self).set(first, last)
+        super().set(first, last)
 
 class FadingLabel(tk.Label):
     def __init__(self, master=None, cnf={}, **kw):
@@ -25,14 +25,14 @@ class FadingLabel(tk.Label):
     def write(self, msg):
         self["text"] = msg
         self.after(2500, lambda: self.config(text=self._idle_text))
-        
+
 # TODO: fix scrolling line numbers
 class NumberedFrame(ttk.Frame):
     # Decorates text with scrollbars and line numbers
     def __init__(self, master, first_line=1, **text_options):
         ttk.Frame.__init__(self, master=master)
   
-        self.text = EnhancedText(self, text_options)
+        self.text = BetterText(self, text_options)
         self.text.grid(row=0, column=1, sticky=tk.NSEW)
 
         options = {
@@ -106,3 +106,4 @@ class NumberedFrame(ttk.Frame):
         
         self._line_numbers.yview(tk.MOVETO, yview[0])
         self._line_numbers.config(state=tk.DISABLED)
+

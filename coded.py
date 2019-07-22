@@ -81,7 +81,7 @@ class Coded(tk.Tk):
 
         # events
         self.bind_all("<Control-n>", self.new_file)
-        self.bind_all("<Control-t>", self.open_file)
+        self.bind_all("<<Control-t>>", self.open_file)
         self.bind_all("<Control-s>", self.save)
         self.bind_all("<Control-S>", self.save_as)
 

@@ -1,7 +1,26 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import font as tkfont
 from tkinter import TclError
+
 import traceback
+import time
+
+def classifyws(s, tabwidth):
+    raw = effective = 0
+    for ch in s:
+        if ch == ' ':
+            raw = raw + 1
+            effective = effective + 1
+        elif ch == '\t':
+            raw = raw + 1
+            effective = (effective // tabwidth + 1) * tabwidth
+        else:
+            break
+    return raw, effective
+
+def index2line(index):
+    return int(float(index))
 
 # TODO: work EnhancedText into BetterText
 class BetterText(tk.Text):
@@ -20,10 +39,390 @@ class BetterText(tk.Text):
         self._original_delete = self._register_tk_proxy_function("delete", self.intercept_delete)
         self._original_mark = self._register_tk_proxy_function("mark", self.intercept_mark)
 
+        self.tabwidth = 8 # See comments in idlelib.EditorWindow 
+        self.indentwidth = 4 
+        self.usetabs = False
+        
+        self._last_event_kind = None
+        self._last_key_time = None
+        
+        self._bind_editing_aids()
+        self._bind_movement_aids()
+        self._bind_selection_aids()
+        self._bind_undo_aids()
+
+        # Make sure that Tk's double-click and next/previous word
+        # operations use our definition of a word (i.e. an identifier)
+        self.tk.call('tcl_wordBreakAfter', 'a b', 0) # make sure word.tcl is loaded
+        self.tk.call('set', 'tcl_wordchars',     u'[a-zA-Z0-9]')
+        self.tk.call('set', 'tcl_nonwordchars', u'[^a-zA-Z0-9]')
+
         # events
         self.bind("<Control-z>", lambda e: self.edit_undo)
         self.bind("<Control-y>", lambda e: self.edit_redo)
 
+
+    def _bind_editing_aids(self):
+        
+        def if_not_readonly(fun):
+            def dispatch(event):
+                if not self.is_read_only():
+                    return fun(event)
+                else:
+                    return "break"
+            return dispatch
+        
+        self.bind("<Control-BackSpace>", if_not_readonly(self.delete_word_left), True)
+        self.bind("<Option-BackSpace>", if_not_readonly(self.delete_word_left), True)
+        self.bind("<Control-Delete>", if_not_readonly(self.delete_word_right), True)
+        self.bind("<Option-Delete>", if_not_readonly(self.delete_word_right), True)
+        self.bind("<BackSpace>", if_not_readonly(self.perform_smart_backspace), True)
+        self.bind("<Return>", if_not_readonly(self.perform_return), True)
+        self.bind("<Tab>", if_not_readonly(self.indent_or_dedent), True)
+    
+    def _bind_movement_aids(self):
+        self.bind("<Home>", self.perform_smart_home, True)
+        self.bind("<Left>", self.move_to_edge_if_selection(0), True)
+        self.bind("<Right>", self.move_to_edge_if_selection(1), True)
+        self.bind("<Next>", self.perform_page_down, True)
+        self.bind("<Prior>", self.perform_page_up, True)
+    
+    def _bind_selection_aids(self):
+        self.bind("<Control-a>", self.select_all, True)
+    
+    def _bind_undo_aids(self):
+        self.bind("<<Undo>>", self._on_undo, True)
+        self.bind("<<Redo>>", self._on_redo, True)
+        self.bind("<<Cut>>", self._on_cut, True)
+        self.bind("<<Copy>>", self._on_copy, True)
+        self.bind("<<Paste>>", self._on_paste, True)
+        self.bind("<FocusIn>", self._on_get_focus, True)
+        self.bind("<FocusOut>", self._on_lose_focus, True)
+        self.bind("<Key>", self._on_key_press, True)
+        self.bind("<1>", self._on_mouse_click, True)
+        self.bind("<2>", self._on_mouse_click, True)
+        self.bind("<3>", self._on_mouse_click, True)
+
+    def delete_word_left(self, event):
+        self.event_generate('<Meta-Delete>')
+        self.edit_separator()
+        return "break"
+
+    def delete_word_right(self, event):
+        self.event_generate('<Meta-d>')
+        self.edit_separator()
+        return "break"
+
+    def perform_smart_backspace(self, event):
+        self._log_keypress_for_undo(event)
+        
+        text = self
+        first, last = self.get_selection_indices()
+        if first and last:
+            text.delete(first, last)
+            text.mark_set("insert", first)
+            return "break"
+        # Delete whitespace left, until hitting a real char or closest
+        # preceding virtual tab stop.
+        chars = text.get("insert linestart", "insert")
+        if chars == '':
+            if text.compare("insert", ">", "1.0"):
+                # easy: delete preceding newline
+                text.delete("insert-1c")
+            else:
+                text.bell()     # at start of buffer
+            return "break"
+        
+        if  chars[-1] not in " \t":
+            # easy: delete preceding real char
+            text.delete("insert-1c")
+            self._log_keypress_for_undo(event)
+            return "break"
+        
+        # Ick.  It may require *inserting* spaces if we back up over a
+        # tab character!  This is written to be clear, not fast.
+        tabwidth = self.tabwidth
+        have = len(chars.expandtabs(tabwidth))
+        assert have > 0
+        want = ((have - 1) // self.indentwidth) * self.indentwidth
+        # Debug prompt is multilined....
+        #if self.context_use_ps1:
+        #    last_line_of_prompt = sys.ps1.split('\n')[-1]
+        #else:
+        last_line_of_prompt = ''
+        ncharsdeleted = 0
+        while 1:
+            if chars == last_line_of_prompt:
+                break
+            chars = chars[:-1]
+            ncharsdeleted = ncharsdeleted + 1
+            have = len(chars.expandtabs(tabwidth))
+            if have <= want or chars[-1] not in " \t":
+                break
+        text.delete("insert-%dc" % ncharsdeleted, "insert")
+        if have < want:
+            text.insert("insert", ' ' * (want - have))
+        return "break"
+    
+    def perform_smart_tab(self, event=None):
+        self._log_keypress_for_undo(event)
+        
+        # if intraline selection:
+        #     delete it
+        # elif multiline selection:
+        #     do indent-region
+        # else:
+        #     indent one level
+        
+        first, last = self.get_selection_indices()
+        if first and last:
+            if index2line(first) != index2line(last):
+                return self.indent_region(event)
+            self.delete(first, last)
+            self.mark_set("insert", first)
+        prefix = self.get("insert linestart", "insert")
+        raw, effective = classifyws(prefix, self.tabwidth)
+        if raw == len(prefix):
+            # only whitespace to the left
+            self._reindent_to(effective + self.indentwidth)
+        else:
+            # tab to the next 'stop' within or to right of line's text:
+            if self.usetabs:
+                pad = '\t'
+            else:
+                effective = len(prefix.expandtabs(self.tabwidth))
+                n = self.indentwidth
+                pad = ' ' * (n - effective % n)
+            self.insert("insert", pad)
+        self.see("insert")
+        return "break"
+
+    def get_cursor_position(self):
+        return map(int, self.index("insert").split("."))
+    
+    def get_line_count(self):
+        return list(map(int, self.index("end-1c").split(".")))[0]
+
+    def perform_return(self, event):
+        # Override this for language specific auto indent
+        pass
+    
+    def perform_page_down(self, event):
+        # if last line is visible then go to last line 
+        # (by default it doesn't move then)
+        try:
+            last_visible_idx = self.index("@0,%d" % self.winfo_height())
+            row, _ = map(int, last_visible_idx.split("."))
+            line_count = self.get_line_count()
+            
+            if (row == line_count 
+                or row == line_count-1): # otherwise tk doesn't show last line
+                self.mark_set("insert", "end")
+        except:
+            traceback.print_exc() 
+    
+    def perform_page_up(self, event):
+        # if first line is visible then go there 
+        # (by default it doesn't move then)    
+        try:
+            first_visible_idx = self.index("@0,0")
+            row, _ = map(int, first_visible_idx.split("."))
+            if row == 1:
+                self.mark_set("insert", "1.0")
+        except:
+            traceback.print_exc() 
+    
+    def compute_smart_home_destination_index(self):
+        """Is overridden in shell"""
+        
+        line = self.get("insert linestart", "insert lineend")
+        for insertpt in range(len(line)):
+            if line[insertpt] not in (' ','\t'):
+                break
+        else:
+            insertpt=len(line)
+            
+        lineat = int(self.index("insert").split('.')[1])
+        if insertpt == lineat:
+            insertpt = 0
+        return "insert linestart+"+str(insertpt)+"c"
+    
+    def perform_smart_home(self, event):
+        if (event.state & 4) != 0 and event.keysym == "Home":
+            # state&4==Control. If <Control-Home>, use the Tk binding.
+            return
+        
+        dest = self.compute_smart_home_destination_index()
+        
+        if (event.state&1) == 0:
+            # shift was not pressed
+            self.tag_remove("sel", "1.0", "end")
+        else:
+            if not self.index_sel_first():
+                # there was no previous selection
+                self.mark_set("my_anchor", "insert")
+            else:
+                if self.compare(self.index_sel_first(), "<",
+                                     self.index("insert")):
+                    self.mark_set("my_anchor", "sel.first") # extend back
+                else:
+                    self.mark_set("my_anchor", "sel.last") # extend forward
+            first = self.index(dest)
+            last = self.index("my_anchor")
+            if self.compare(first,">",last):
+                first,last = last,first
+            self.tag_remove("sel", "1.0", "end")
+            self.tag_add("sel", first, last)
+        self.mark_set("insert", dest)
+        self.see("insert")
+        return "break"
+
+    def move_to_edge_if_selection(self, edge_index):
+        """Cursor move begins at start or end of selection
+
+        When a left/right cursor key is pressed create and return to Tkinter a
+        function which causes a cursor move from the associated edge of the
+        selection.
+        """
+        def move_at_edge(event):
+            if (self.has_selection() 
+                and (event.state & 5) == 0): # no shift(==1) or control(==4) pressed
+                try:
+                    self.mark_set("insert", ("sel.first+1c", "sel.last-1c")[edge_index])
+                except tk.TclError:
+                    pass
+                
+        return move_at_edge
+    
+    def indent_or_dedent(self, event=None):
+        self._log_keypress_for_undo(event)
+        if event.state in [1,9]: # shift is pressed (1 in Mac, 9 in Win)
+            return self.dedent_region(event)
+        else:
+            return self.perform_smart_tab(event)    
+    
+    def indent_region(self, event=None):
+        head, tail, chars, lines = self._get_region()
+        for pos in range(len(lines)):
+            line = lines[pos]
+            if line:
+                raw, effective = classifyws(line, self.tabwidth)
+                effective = effective + self.indentwidth
+                lines[pos] = self._make_blanks(effective) + line[raw:]
+        self._set_region(head, tail, chars, lines)
+        return "break"
+
+    def dedent_region(self, event=None):
+        head, tail, chars, lines = self._get_region()
+        for pos in range(len(lines)):
+            line = lines[pos]
+            if line:
+                raw, effective = classifyws(line, self.tabwidth)
+                effective = max(effective - self.indentwidth, 0)
+                lines[pos] = self._make_blanks(effective) + line[raw:]
+        self._set_region(head, tail, chars, lines)
+        return "break"
+    
+    def select_all(self, event):
+        self.tag_remove("sel", "1.0", tk.END)
+        self.tag_add('sel', '1.0', tk.END)
+    
+    def _reindent_to(self, column):
+        # Delete from beginning of line to insert point, then reinsert
+        # column logical (meaning use tabs if appropriate) spaces.
+        if self.compare("insert linestart", "!=", "insert"):
+            self.delete("insert linestart", "insert")
+        if column:
+            self.insert("insert", self._make_blanks(column))
+        
+    def _get_region(self):
+        first, last = self.get_selection_indices()
+        if first and last:
+            head = self.index(first + " linestart")
+            tail = self.index(last + "-1c lineend +1c")
+        else:
+            head = self.index("insert linestart")
+            tail = self.index("insert lineend +1c")
+        chars = self.get(head, tail)
+        lines = chars.split("\n")
+        return head, tail, chars, lines
+
+    def _set_region(self, head, tail, chars, lines):
+        newchars = "\n".join(lines)
+        if newchars == chars:
+            self.bell()
+            return
+        self.tag_remove("sel", "1.0", "end")
+        self.mark_set("insert", head)
+        self.delete(head, tail)
+        self.insert(head, newchars)
+        self.tag_add("sel", head, "insert")
+    
+    def _log_keypress_for_undo(self, e):
+        if e is None:
+            return
+        
+        # NB! this may not execute if the event is cancelled in another handler
+        event_kind = self._get_event_kind(e)
+        
+        if (event_kind != self._last_event_kind
+            or e.char in ("\r", "\n", " ", "\t")
+            or e.keysym in ["Return", "KP_Enter"]
+            or time.time() - self._last_key_time > 2
+            ):
+            self.edit_separator()
+            
+        self._last_event_kind = event_kind
+        self._last_key_time = time.time()
+
+    def _get_event_kind(self, event):
+        if event.keysym in ("BackSpace", "Delete"):
+            return "delete"
+        elif event.char:
+            return "insert"
+        else:
+            # eg. e.keysym in ("Left", "Up", "Right", "Down", "Home", "End", "Prior", "Next"):
+            return "other_key"
+
+    def _make_blanks(self, n):
+        # Make string that displays as n leading blanks.
+        if self.usetabs:
+            ntabs, nspaces = divmod(n, self.tabwidth)
+            return '\t' * ntabs + ' ' * nspaces
+        else:
+            return ' ' * n
+
+    def _on_undo(self, e):
+        self._last_event_kind = "undo"
+        
+    def _on_redo(self, e):
+        self._last_event_kind = "redo"
+        
+    def _on_cut(self, e):
+        self._last_event_kind = "cut"
+        self.edit_separator()        
+        
+    def _on_copy(self, e):
+        self._last_event_kind = "copy"
+        self.edit_separator()        
+        
+    def _on_paste(self, e):
+        self._last_event_kind = "paste"
+        self.edit_separator()        
+    
+    def _on_get_focus(self, e):
+        self._last_event_kind = "get_focus"
+        self.edit_separator()        
+        
+    def _on_lose_focus(self, e):
+        self._last_event_kind = "lose_focus"
+        self.edit_separator()        
+    
+    def _on_key_press(self, e):
+        return self._log_keypress_for_undo(e)
+
+    def _on_mouse_click(self, event):
+        self.edit_separator()    
 
     def unbind(self, sequence, funcid=None):
         '''See:
