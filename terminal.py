@@ -1,6 +1,8 @@
 import subprocess, sys
 import tkinter as tk
 
+from winpty import PtyProcess
+
 class Terminal(tk.Frame):
     def __init__(self, master=None, caller=None, cnf={}, **kw):
         tk.Frame.__init__(self, master, cnf, **kw)
@@ -37,28 +39,26 @@ class Terminal(tk.Frame):
         self.entry.insert(0, cmd)
 
     def on_return(self, *args):
-        cmd = self.get_cmd()
+        cmd = self.entry.get()
+        self.entry.delete(0, tk.END)
+        self.execute(cmd)
+
+    def execute(self, cmd):
         self._call_stack.insert(1, cmd)
         self._call_index = 0
         self.write(self._caller + "> " + cmd)
-        self.execute(cmd)
+        #self.run(subprocess.Popen(cmd, cwd=self._caller, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True))
+        try:
+            self.run(PtyProcess.spawn(cmd, cwd=self._caller))
+        except Exception as e:
+            self.write(str(e))
 
-    def get_cmd(self):
-        cmd = self.entry.get()
-        self.entry.delete(0, tk.END)
-        return cmd
 
-    def execute(self, cmd):
-        self.run(subprocess.Popen(cmd, cwd=self._caller, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True))
-
-    def run(self, p):
-        out = p.stderr.read(1)
-        if out == '' and p.poll() != None:
-            return
-        if out != '':
-            sys.stdout.write(out)
-            sys.stdout.flush()
-        self.after(20, self.run, p)
+    def run(self, process):
+        if process.isalive():
+            msg = process.readline()
+            self.write(msg)
+            self.after(20, self.run, process)
 
 
     def write(self, msg):
@@ -69,28 +69,20 @@ class Terminal(tk.Frame):
         
 
 
+
 if __name__ == "__main__":
-    # import os
+    import os
 
-    # root = tk.Tk()
+    root = tk.Tk()
 
-    # root.title("Terminal")
-    # root.geometry("600x400")
+    root.title("Terminal")
+    root.geometry("600x400")
 
-    # terminal = Terminal(root, caller=os.getcwd())
-    # terminal.pack()
+    terminal = Terminal(root, caller=os.getcwd())
+    terminal.pack()
 
-    # root.mainloop()
+    #terminal.execute("python terminalTest.py")
 
-    p = subprocess.Popen("python extendedText.py", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
- 
-    ## But do not wait till netstat finish, start displaying output immediately ##
-    while True:
-        out = p.stderr.read(1).decode("utf-8")
-        if out == '' and p.poll() != None:
-            print("Terminated")
-            break
-        if out != '':
-            print("Run")
-            sys.stdout.write(out)
-            sys.stdout.flush()
+    root.mainloop()
+
+   

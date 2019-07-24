@@ -2,7 +2,7 @@ import tkinter as tk
 
 from tkinter import ttk
 from extendedText import BetterText
-from tktextext import EnhancedText
+from highlight import highlight
 
 class AutoScrollbar(ttk.Scrollbar):
     def __init__(self, master=None, **kw):
@@ -26,7 +26,6 @@ class FadingLabel(tk.Label):
         self["text"] = msg
         self.after(2500, lambda: self.config(text=self._idle_text))
 
-# TODO: fix scrolling line numbers
 class NumberedFrame(ttk.Frame):
     # Decorates text with scrollbars and line numbers
     def __init__(self, master, first_line=1, **text_options):
@@ -48,6 +47,7 @@ class NumberedFrame(ttk.Frame):
         options.update(text_options)
         
         self._line_numbers = tk.Text(self, **options)
+        self._line_numbers.bind("<MouseWheel>", lambda e: "break")
         self._set_line_numbers(first_line)
         
         self._scrollY = AutoScrollbar(self, orient=tk.VERTICAL)
@@ -77,6 +77,7 @@ class NumberedFrame(ttk.Frame):
     
     def on_text_changed(self, *args):
         self.update_line_numbers()
+        highlight(self.text)
     
     def on_text_vertical_scroll(self, first, last):
         self._scrollY.set(first, last)

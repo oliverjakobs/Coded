@@ -16,9 +16,7 @@ from editor import Editor
 from workspace import Workspace
 
 
-# TODO: ctrl-o newline?
 # TODO: style/appearance 
-
 class Coded(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)

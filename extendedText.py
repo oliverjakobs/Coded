@@ -3,6 +3,8 @@ from tkinter import ttk
 from tkinter import font as tkfont
 from tkinter import TclError
 
+from highlight import *
+
 import traceback
 import time
 
@@ -21,7 +23,6 @@ def classifyws(s, tabwidth):
 
 def index2line(index):
     return int(float(index))
-
 
 class BetterText(tk.Text):
     # Allows intercepting Text commands at Tcl-level
@@ -234,7 +235,6 @@ class BetterText(tk.Text):
     
     def compute_smart_home_destination_index(self):
         """Is overridden in shell"""
-        
         line = self.get("insert linestart", "insert lineend")
         for insertpt in range(len(line)):
             if line[insertpt] not in (' ','\t'):
@@ -425,9 +425,7 @@ class BetterText(tk.Text):
         self.edit_separator()    
 
     def unbind(self, sequence, funcid=None):
-        '''See:
-            http://stackoverflow.com/questions/6433369/deleting-and-changing-a-tkinter-event-binding-in-python
-        '''
+        '''See: http://stackoverflow.com/questions/6433369/deleting-and-changing-a-tkinter-event-binding-in-python '''
         if not funcid:
             self.tk.call('bind', self._w, sequence, '')
             return
@@ -490,6 +488,11 @@ class BetterText(tk.Text):
             pass
         else:
             self.direct_delete(index1, index2)
+
+    def insert_from_file(self, filename):
+        with open(filename, "r") as f:
+            self.insert(1.0, f.read())
+        highlight_all(self)
     
     def _is_erroneous_delete(self, index1, index2):
         # Paste can cause deletes where index1 is sel.start but text has no selection. This would cause errors
@@ -538,18 +541,8 @@ if __name__ == "__main__":
     root = tk.Tk()
     root.geometry("600x400")
 
-    def on_event_root(*args):
-        print("Root")
-
-    def on_event_text(*args):
-        print("Text")
-
-    text = tk.Text(root)
+    text = BetterText(root)
     text.pack()
-
-    #text.tk.call("bind", text._w, "<Control-o>", "[" + text._w +" insert \"Hello\"]")
-    #text.unbind("<Control-o>")
-    root.bind("<Control-o>", on_event_root)
 
 
     root.mainloop()

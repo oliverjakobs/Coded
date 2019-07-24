@@ -56,4 +56,27 @@ class Editor(ttk.Notebook):
         return name in self._new_tabs
 
 
+from highlight import *
 
+if __name__ == "__main__":
+    root = tk.Tk()
+
+    width = 1200
+    height = 800
+
+    root.title("Editor")
+    root.geometry("{0}x{1}".format(width, height))
+    root.rowconfigure(0, weight=1)
+    root.columnconfigure(0, weight=1)
+
+    filename = "fibonacci.py"
+
+    editor = Editor(root, width=1200, height=800)
+    editor.grid(row=0, column=0, sticky=tk.NSEW)
+    status = tk.Label(root, text="Row: 0 | Column: 0", anchor=tk.W)
+    status.grid(row=1, column=0, sticky=tk.EW)
+
+    text = editor.add_tab(filename, True, wrap=tk.NONE, bd=0, padx=5, pady=5)
+    text.insert_from_file(filename)
+
+    root.mainloop()
