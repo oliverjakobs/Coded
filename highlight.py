@@ -4,6 +4,7 @@ from pygments.lexers import PythonLexer
 
 import tkinter as tk
 
+# TODO: colors from json
 def highlight(text, lineNumber=None):
     ''' highlight the line where the cursor is '''
         
@@ -12,8 +13,7 @@ def highlight(text, lineNumber=None):
     if lineNumber == None:
         line_text = text.get("%d.%d" % (line_no, 0),  "%d.end" % (line_no))
         text.mark_set("range_start", str(line_no) + '.0')
-        
-    elif lineNumber is not None:
+    else:
         line_text = text.get("%d.%d" % (lineNumber, 0), "%d.end" % (lineNumber))
         text.mark_set("range_start", str(lineNumber) + '.0')
 

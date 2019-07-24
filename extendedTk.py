@@ -2,7 +2,8 @@ import tkinter as tk
 
 from tkinter import ttk
 from extendedText import BetterText
-from highlight import highlight
+
+from highlight import *
 
 class AutoScrollbar(ttk.Scrollbar):
     def __init__(self, master=None, **kw):
@@ -74,7 +75,7 @@ class NumberedFrame(ttk.Frame):
         else:
             self._line_numbers.grid(row=0, column=0, sticky=tk.NSEW)
             self.update_line_numbers()
-    
+
     def on_text_changed(self, *args):
         self.update_line_numbers()
         highlight(self.text)

@@ -77,6 +77,12 @@ if __name__ == "__main__":
     status.grid(row=1, column=0, sticky=tk.EW)
 
     text = editor.add_tab(filename, True, wrap=tk.NONE, bd=0, padx=5, pady=5)
+
+    def on_event(*args):
+        highlight(text)
+
+    text.bind("<Control-s>", on_event)
+
     text.insert_from_file(filename)
 
     root.mainloop()
