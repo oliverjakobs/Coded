@@ -3,7 +3,7 @@ from tkinter import ttk
 from tkinter import font as tkfont
 from tkinter import TclError
 
-from highlight import *
+from highlight import Highlighter
 
 import traceback
 import time
@@ -30,9 +30,10 @@ class BetterText(tk.Text):
         tk.Text.__init__(self, master=master, cnf=cnf, **kw)
         
         self._read_only = read_only
+        self.highlighter = None
         
-        self._original_widget_name = self._w + "_orig"
-        self.tk.call("rename", self._w, self._original_widget_name)
+        self._w_orig = self._w + "_orig"
+        self.tk.call("rename", self._w, self._w_orig)
         self.tk.createcommand(self._w, self._dispatch_tk_operation)
         self._tk_proxies = {}
         
@@ -44,6 +45,9 @@ class BetterText(tk.Text):
         self.bind("<Control-z>", lambda e: self.edit_undo)
         self.bind("<Control-y>", lambda e: self.edit_redo)
 
+
+    def set_highlighter(self, highlighter):
+        self.highlighter = highlighter
 
     def unbind(self, sequence, funcid=None):
         '''See: http://stackoverflow.com/questions/6433369/deleting-and-changing-a-tkinter-event-binding-in-python '''
@@ -60,7 +64,7 @@ class BetterText(tk.Text):
         setattr(self, operation, function)
         
         def original_function(*args):
-            self.tk.call((self._original_widget_name, operation) + args)
+            self.tk.call((self._w_orig, operation) + args)
             
         return original_function
     
@@ -70,7 +74,7 @@ class BetterText(tk.Text):
             if f:
                 return f(*args)
             else:
-                return self.tk.call((self._original_widget_name, operation) + args)
+                return self.tk.call((self._w_orig, operation) + args)
             
         except TclError as e:
             # Some Tk internal actions (eg. paste and cut) can cause this error
@@ -146,15 +150,20 @@ class BetterText(tk.Text):
         
     def direct_insert(self, index, chars, tags=None):
         self._original_insert(index, chars, tags)
+        if self.highlighter:
+            self.highlighter.pygmentize_current()
         self.event_generate("<<TextChange>>")
 
     def insert_from_file(self, filename):
         with open(filename, "r") as f:
             self.insert(1.0, f.read())
-        highlight_all(self)
+        if self.highlighter:
+            self.highlighter.pygmentize_all()
     
     def direct_delete(self, index1, index2=None):
         self._original_delete(index1, index2)
+        if self.highlighter:
+            self.highlighter.pygmentize_current()
         self.event_generate("<<TextChange>>")
 
 

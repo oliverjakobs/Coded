@@ -1,8 +1,13 @@
 {
+    "Background":
+    {
+        "Primary": "#363636",
+        "Secondary": "#424242"
+    },
     "Token":
     {
-        "Name": "#404040",
-        "Text": "#404040",
+        "Name": "#dedede",
+        "Text": "#dedede",
     
         "Keyword": "#a460bf",
         "Keyword.Constant": "#a460bf",

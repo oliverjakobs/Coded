@@ -16,7 +16,7 @@ from editor import Editor
 from workspace import Workspace
 
 
-# TODO: style/appearance 
+# TODO: integrate style
 class Coded(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)

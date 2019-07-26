@@ -3,8 +3,6 @@ import tkinter as tk
 from tkinter import ttk
 from extendedText import BetterText
 
-from highlight import *
-
 class AutoScrollbar(ttk.Scrollbar):
     def __init__(self, master=None, **kw):
         ttk.Scrollbar.__init__(self, master=master, **kw)
@@ -54,11 +52,11 @@ class NumberedFrame(ttk.Frame):
         self._scrollY = AutoScrollbar(self, orient=tk.VERTICAL)
         self._scrollX = AutoScrollbar(self, orient=tk.HORIZONTAL)
 
-        self.text["yscrollcommand"] = self.on_text_vertical_scroll
-        self.text["xscrollcommand"] = self.on_text_horizontal_scroll  
+        self.text["yscrollcommand"] = self._on_text_vertical_scroll
+        self.text["xscrollcommand"] = self._on_text_horizontal_scroll  
 
-        self._scrollY["command"] = self.on_vertical_scroll 
-        self._scrollX["command"] = self.on_horizontal_scroll
+        self._scrollY["command"] = self._on_vertical_scroll 
+        self._scrollX["command"] = self._on_horizontal_scroll
 
         self._scrollY.grid(row=0, column=2, sticky=tk.NSEW)
         self._scrollX.grid(row=1, column=0, sticky=tk.NSEW, columnspan=2)
@@ -66,7 +64,7 @@ class NumberedFrame(ttk.Frame):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
         
-        self.text.bind("<<TextChange>>", self.on_text_changed, True)
+        self.text.bind("<<TextChange>>", self._on_text_changed, True)
 
     def _set_line_numbers(self, first):
         self._first_line = first
@@ -74,27 +72,26 @@ class NumberedFrame(ttk.Frame):
             self._line_numbers.grid_forget()
         else:
             self._line_numbers.grid(row=0, column=0, sticky=tk.NSEW)
-            self.update_line_numbers()
+            self._update_line_numbers()
 
-    def on_text_changed(self, *args):
-        self.update_line_numbers()
-        highlight_current(self.text)
+    def _on_text_changed(self, *args):
+        self._update_line_numbers()
     
-    def on_text_vertical_scroll(self, first, last):
+    def _on_text_vertical_scroll(self, first, last):
         self._scrollY.set(first, last)
         self._line_numbers.yview(tk.MOVETO, first)
     
-    def on_text_horizontal_scroll(self, first, last):
+    def _on_text_horizontal_scroll(self, first, last):
         self._scrollX.set(first, last)
     
-    def on_vertical_scroll(self,*args):
+    def _on_vertical_scroll(self,*args):
         self.text.yview(*args)
         self._line_numbers.yview(*args)
     
-    def on_horizontal_scroll(self,*args):
+    def _on_horizontal_scroll(self,*args):
         self.text.xview(*args)
     
-    def update_line_numbers(self):
+    def _update_line_numbers(self):
         text_line_count = int(self.text.index("end-1c").split(".")[0])
         # save yview position
         yview = self._line_numbers.yview()
@@ -108,4 +105,5 @@ class NumberedFrame(ttk.Frame):
         
         self._line_numbers.yview(tk.MOVETO, yview[0])
         self._line_numbers.config(state=tk.DISABLED)
+
 
