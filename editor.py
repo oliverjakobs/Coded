@@ -79,7 +79,7 @@ if __name__ == "__main__":
     text = editor.add_tab(filename, True, wrap=tk.NONE, bd=0, padx=5, pady=5)
 
     def on_event(*args):
-        highlight(text)
+        highlight_current(text)
 
     text.bind("<Control-s>", on_event)
 

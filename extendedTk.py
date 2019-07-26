@@ -78,7 +78,7 @@ class NumberedFrame(ttk.Frame):
 
     def on_text_changed(self, *args):
         self.update_line_numbers()
-        highlight(self.text)
+        highlight_current(self.text)
     
     def on_text_vertical_scroll(self, first, last):
         self._scrollY.set(first, last)

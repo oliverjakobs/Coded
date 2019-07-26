@@ -1,0 +1,39 @@
+{
+    "Token":
+    {
+        "Name": "#404040",
+        "Text": "#404040",
+    
+        "Keyword": "#a460bf",
+        "Keyword.Constant": "#a460bf",
+        "Keyword.Declaration": "#a460bf",
+        "Keyword.Namespace": "#a460bf",
+        "Keyword.Pseudo": "#a460bf",
+        "Keyword.Reserved": "#a460bf",
+        "Keyword.Type": "#a460bf",
+    
+        "Punctuation": "#ff0000",
+    
+        "Name.Class": "#ddd313",
+        "Name.Exception": "#ddd313",
+        "Name.Function": "#298fb5",
+        "Name.Function.Magic": "#298fb5",
+        "Name.Decorator": "#298fb5",
+                
+        "Name.Builtin": "#CC7A00",
+        "Name.Builtin.Pseudo": "#CC7A00",
+    
+        "Operator": "#FF0000",
+        "Operator.Word": "#CC7A00",
+    
+        "Comment": "#3ca658",
+        "Comment.Single": "#3ca658",
+        "Comment.Double": "#3ca658",
+    
+        "Literal.Number.Integer": "#50bfbf",
+        "Literal.Number.Float": "#50bfbf",
+    
+        "Literal.String.Single": "#35c666",
+        "Literal.String.Double": "#35c666"
+    }
+}
