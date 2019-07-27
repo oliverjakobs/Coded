@@ -3,7 +3,7 @@ from tkinter import ttk
 
 from extendedTk import NumberedFrame
 from highlight import Highlighter
-from style import Style
+from style import JSONStyle
 
 class Editor(ttk.Notebook):
     def __init__(self, master, style, **kw):
@@ -16,8 +16,15 @@ class Editor(ttk.Notebook):
     def add_tab(self, name, new=False, **tab_options):
         if name in self._tab_names:
             return None
+
+        options = {}
+
+        if self.style:
+            options["background"] = self.style.backgrounds["Primary"]
+
+        options.update(tab_options)
         
-        tab = NumberedFrame(self, **tab_options)
+        tab = NumberedFrame(self, **options)
         self.add(tab, text=name)
         self.select(tab)
 

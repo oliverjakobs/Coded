@@ -8,24 +8,8 @@ from highlight import Highlighter
 import traceback
 import time
 
-def classifyws(s, tabwidth):
-    raw = effective = 0
-    for ch in s:
-        if ch == ' ':
-            raw = raw + 1
-            effective = effective + 1
-        elif ch == '\t':
-            raw = raw + 1
-            effective = (effective // tabwidth + 1) * tabwidth
-        else:
-            break
-    return raw, effective
-
-def index2line(index):
-    return int(float(index))
-
 class BetterText(tk.Text):
-    # Allows intercepting Text commands at Tcl-level
+    """ Allows intercepting Text commands at Tcl-level """
     def __init__(self, master=None, cnf={}, read_only=False, **kw):
         tk.Text.__init__(self, master=master, cnf=cnf, **kw)
         

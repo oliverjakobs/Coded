@@ -3,11 +3,12 @@ from pygments import lex
 from pygments.lexers import PythonLexer
 
 import tkinter as tk
-from style import Style
+from style import JSONStyle
 
 class Highlighter:
-    def __init__(self, text, style):
+    def __init__(self, text, style, lexer = PythonLexer()):
         self.text = text
+        self._lexer = lexer
         self._configure(style)
 
     def _configure(self, style):
@@ -30,7 +31,7 @@ class Highlighter:
 
         self.text.mark_set("range_start", line_start)
 
-        for token, content in lex(line, PythonLexer()):
+        for token, content in lex(line, self._lexer):
             self.text.mark_set("range_end", "range_start + %dc" % len(content))
             self.text.tag_add(str(token), "range_start", "range_end")
             self.text.mark_set("range_start", "range_end")
@@ -42,13 +43,9 @@ class Highlighter:
 
     def pygmentize_all(self):
         """ highlight the whole text ... this can take pretty long for larger files """
-        code = self.text.get("1.0", "end-1c")
-        i = 1
-        for line in code.splitlines():
-            self.text.index("%d.0" %i)
+        for i in range(1, int(self.text.index("end").split(".")[0])):
+            self.text.index("%d.0" % (i))
             self.pygmentize_line(line_number=i)
-            self.text.update()
-            i += 1
 
 
 if __name__ == "__main__":
@@ -64,7 +61,7 @@ if __name__ == "__main__":
 
     text = tk.Text(root, width=width, height=height)
     text.pack(fill = tk.BOTH)
-    highlighter = Highlighter(text, Style("style.json"))
+    highlighter = Highlighter(text, JSONStyle("style.json"))
 
     with open(filename, "r") as f:
         text.insert(1.0, f.read())

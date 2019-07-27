@@ -4,11 +4,10 @@ from tkinter import messagebox
 
 from editor import Editor
 from fileview import FileView
-from terminal import Terminal
-from style import Style
+from style import JSONStyle
 
 class Workspace(ttk.PanedWindow):
-    def __init__(self, master, location, width, height, prop=0.86, **kw):
+    def __init__(self, master, location, width, height, style=None, prop=0.86, **kw):
         ttk.PanedWindow.__init__(self, master, width=width, height=height, **kw)
 
         self.location = location
@@ -18,7 +17,7 @@ class Workspace(ttk.PanedWindow):
         # content
         editor_width = int(width * prop)
 
-        self.editor = Editor(self, style=Style("style.json"), width=editor_width)
+        self.editor = Editor(self, style=style, width=editor_width)
         self.fileview = FileView(self, path=location, text="Explorer")
 
         # adding content to the workspace
@@ -38,16 +37,15 @@ class Workspace(ttk.PanedWindow):
         pass
 
     def load_tab(self, filename, new_tab=False):
-        if new_tab:
-            self.editor.add_tab(filename, new_tab, wrap=tk.NONE, bd=0, padx=5, pady=5)
+        text = self.editor.add_tab(filename, new_tab, wrap=tk.NONE, bd=0, padx=5, pady=5)
+        if new_tab: # new tab no text to insert
             return 0, filename
+        if not text: # tab with this name is already open
+            return 1, filename
 
         try:
-            text = self.editor.add_tab(filename, wrap=tk.NONE, bd=0, padx=5, pady=5)
-            if text:
-                text.insert_from_file(filename)
-                return 0, filename
-            return 1, filename
+            text.insert_from_file(filename)
+            return 0, filename
         except UnicodeDecodeError as e:
             messagebox.showerror("UnicodeDecodeError", "Could not open {0}: \n{1}".format(filename, e))
             self.editor.delete_tab()   

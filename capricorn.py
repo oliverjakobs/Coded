@@ -14,10 +14,11 @@ from extendedText import BetterText
 from fileview import FileView
 from editor import Editor
 from workspace import Workspace
+from style import JSONStyle
 
 
 # TODO: integrate style
-class Coded(tk.Tk):
+class Capricorn(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         # setup
@@ -40,7 +41,9 @@ class Coded(tk.Tk):
         self.columnconfigure(0, weight=1)
 
         # style
-        self.style = ttk.Style()
+        self.style = JSONStyle("style.json")
+
+        # print(ttk.Style().theme_names())
         
         # menubar
         self.load_menu()
@@ -49,13 +52,6 @@ class Coded(tk.Tk):
         self.toolbar = tk.Frame(self, bg="grey")
         self.toolbar.grid(row=0, column=0, sticky=tk.EW)
 
-        # button_run = ttk.Button(toolbar, text="Run")
-        # button_run.pack(side=tk.RIGHT)
-
-        # run_cmd = ttk.Combobox(toolbar, values=["Choose Command", "Manage..."])
-        # run_cmd.current(0)
-        # run_cmd.pack(side=tk.RIGHT)
-
         # get the size of the workspace
         self.update()
 
@@ -63,15 +59,8 @@ class Coded(tk.Tk):
         ws_height = self.winfo_height()
 
         # workspace
-        self.workspace = Workspace(self, os.getcwd(), ws_width, ws_height, orient=tk.HORIZONTAL)
+        self.workspace = Workspace(self, os.getcwd(), ws_width, ws_height, style=self.style, orient=tk.HORIZONTAL)
         self.workspace.grid(row=1, column=0, sticky=tk.NSEW)
-
-        # console
-        self.console = ttk.Notebook(self.workspace)
-        #workspace.add(console)
-
-        self.console.add(ttk.Frame(self.console), text="Output")
-        self.console.add(ttk.Frame(self.console), text="Terminal")
 
         # status bar
         self.status = FadingLabel(self, text="Status", bd=1, relief=tk.SUNKEN, anchor=tk.W)
@@ -79,7 +68,7 @@ class Coded(tk.Tk):
 
         # events
         self.bind_all("<Control-n>", self.new_file)
-        self.bind_all("<<Control-t>>", self.open_file)
+        self.bind_all("<Control-t>", self.open_file)
         self.bind_all("<Control-s>", self.save)
         self.bind_all("<Control-S>", self.save_as)
 
@@ -167,7 +156,7 @@ class Coded(tk.Tk):
 
 
 if __name__ == "__main__":
-    app = Coded()
+    app = Capricorn()
     app.mainloop()
 
 

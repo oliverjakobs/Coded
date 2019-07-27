@@ -1,11 +1,11 @@
 import json
 
-class Style:
-    def __init__(self, json_style):
-        with open(json_style) as json_file:
-            data = json.load(json_file)
+class JSONStyle:
+    def __init__(self, path):
+        with open(path) as style_sheet:
+            style = json.load(style_sheet)
 
-            self.backgrounds = data["Background"] # backgrounds["Primary"] and backgrounds["Secondary"]
-            self.tokens = data["Token"]
+            self.backgrounds = style["Background"] # backgrounds["Primary"] and backgrounds["Secondary"]
+            self.tokens = style["Token"]
 
     

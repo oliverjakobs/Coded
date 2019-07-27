@@ -8,7 +8,7 @@ class AutoScrollbar(ttk.Scrollbar):
         ttk.Scrollbar.__init__(self, master=master, **kw)
 
     def set(self, first, last):
-        # Hide and show scrollbar as needed
+        """ Hide and show scrollbar as needed """
         first, last = float(first), float(last)
         if first <= 0 and last >= 1:
             self.grid_remove()
@@ -17,18 +17,20 @@ class AutoScrollbar(ttk.Scrollbar):
         super().set(first, last)
 
 class FadingLabel(tk.Label):
-    def __init__(self, master=None, cnf={}, **kw):
+    """ Label that fades back to an idle text after a given time """
+    def __init__(self, master=None, delay=2500, cnf={}, **kw):
         tk.Label.__init__(self, master, cnf, **kw)
         self._idle_text = self["text"]
+        self._delay = delay
 
     def write(self, msg):
         self["text"] = msg
-        self.after(2500, lambda: self.config(text=self._idle_text))
+        self.after(self._delay, lambda: self.config(text=self._idle_text))
 
-class NumberedFrame(ttk.Frame):
-    # Decorates text with scrollbars and line numbers
+class NumberedFrame(tk.Frame):
+    """ Decorates text with scrollbars and line numbers """
     def __init__(self, master, first_line=1, **text_options):
-        ttk.Frame.__init__(self, master=master)
+        tk.Frame.__init__(self, master=master)
   
         self.text = BetterText(self, text_options)
         self.text.grid(row=0, column=1, sticky=tk.NSEW)

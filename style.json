@@ -38,7 +38,7 @@
         "Literal.Number.Integer": "#50bfbf",
         "Literal.Number.Float": "#50bfbf",
     
-        "Literal.String.Single": "#35c666",
-        "Literal.String.Double": "#35c666"
+        "Literal.String.Single": "#c7a900",
+        "Literal.String.Double": "#c7a900"
     }
 }
