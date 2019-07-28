@@ -43,6 +43,8 @@ class Capricorn(tk.Tk):
         # style
         self.style = JSONStyle("style.json")
 
+        ttk.Style().theme_use("vista")
+
         # print(ttk.Style().theme_names())
         
         # menubar

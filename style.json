@@ -1,11 +1,14 @@
 {
-    "Background":
-    {
+    "TNotebook": {
+        "map": {
+            "background": "#363636"
+        }
+    },
+    "Background": {
         "Primary": "#363636",
         "Secondary": "#424242"
     },
-    "Token":
-    {
+    "Token": {
         "Name": "#dedede",
         "Text": "#dedede",
     

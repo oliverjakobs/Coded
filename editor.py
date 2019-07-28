@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     filename = "fibonacci.py"
 
-    editor = Editor(root, width=1200, height=800, style=Style("style.json"))
+    editor = Editor(root, width=1200, height=800, style=JSONStyle("style.json"))
     editor.grid(row=0, column=0, sticky=tk.NSEW)
     status = tk.Label(root, text="Row: 0 | Column: 0", anchor=tk.W, bg="#424242")
     status.grid(row=1, column=0, sticky=tk.EW)
