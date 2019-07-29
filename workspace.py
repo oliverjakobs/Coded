@@ -3,8 +3,10 @@ from tkinter import ttk
 from tkinter import messagebox
 
 from editor import Editor
-from fileview import FileView
+from extendedTk import Fileview
 from style import JSONStyle
+
+import os
 
 class Workspace(ttk.PanedWindow):
     def __init__(self, master, location, width, height, style=None, prop=0.86, **kw):
@@ -18,7 +20,7 @@ class Workspace(ttk.PanedWindow):
         editor_width = int(width * prop)
 
         self.editor = Editor(self, style=style, width=editor_width)
-        self.fileview = FileView(self, path=location, text="Explorer")
+        self.fileview = Fileview(self, path=location, text="Explorer")
 
         # adding content to the workspace
         self.add(self.editor)
@@ -30,7 +32,9 @@ class Workspace(ttk.PanedWindow):
         self.fileview.tree.bind("<<TreeviewOpen>>", self.on_open)
 
     def on_open(self, *args):
-        self.load_tab(self.fileview.focus_path())
+        filename = self.fileview.focus_path()
+        if not os.path.isdir(filename):
+            self.load_tab(filename)
     
     def on_tab_changed(self, event):
         #print(self.editor.get_index())

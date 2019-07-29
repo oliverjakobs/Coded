@@ -1,30 +1,102 @@
 import json
+from tkinter import ttk
 
-class JSONStyle:
-    def __init__(self, path):
+import utils
+
+# TODO: adjust themes
+class ExtendedStyle(ttk.Style):
+    """
+    Style that loads themes from tcl files. Can be
+    used as a drop-in replacement for normal ttk.Style instances.
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        :param theme: Theme to set up initialization completion. If the
+                      theme is not available, fails silently.
+        """
+        theme = kwargs.pop("theme", None)
+
+        # Initialize as ttk.Style
+        ttk.Style.__init__(self, *args, **kwargs)
+
+        # Initialize as ThemedObject        
+        self._load_themes()
+
+        # Set the initial theme
+        if theme is not None and theme in self.get_themes():
+            self.set_theme(theme)
+
+    def _load_themes(self):
+        """Load the themes into the Tkinter interpreter"""
+        with utils.chdir_temp(utils.get_file_directory()):
+            self._append_theme_dir("themes")
+            self.tk.eval("source themes/pkgIndex.tcl")
+        
+    def _append_theme_dir(self, name):
+        """Append a theme dir to the Tk interpreter auto_path"""
+        path = "[{}]".format(utils.get_file_directory() + "/" + name)
+        self.tk.call("lappend", "auto_path", path)
+
+    def set_theme(self, theme_name):
+        """
+        Set new theme to use. Uses a direct tk call to allow usage
+        of the themes supplied with this package.
+
+        :param theme_name: name of theme to activate
+        """
+        self.tk.call("package", "require", "ttk::theme::{}".format(theme_name))
+        self.tk.call("ttk::setTheme", theme_name)
+
+    def get_themes(self):
+        """Return a list of names of available themes"""
+        return list(set(self.tk.call("ttk::themes")))
+
+    def theme_use(self, theme_name=None):
+        """
+        Set a new theme to use or return current theme name
+
+        :param theme_name: name of theme to use
+        :returns: active theme name
+        """
+        if theme_name is not None:
+            self.set_theme(theme_name)
+        return ttk.Style.theme_use(self)
+
+class JSONStyle(ExtendedStyle):
+    """
+    Style that loads token styles from a json file
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        :param path: path to the json file
+        """
+        path = kwargs.pop("path", None)
+        ExtendedStyle.__init__(self, *args, **kwargs)
+        
         with open(path) as style_sheet:
             style = json.load(style_sheet)
 
             self.backgrounds = style["Background"] # backgrounds["Primary"] and backgrounds["Secondary"]
+            self.foregrounds = style["Foreground"] # foregrounds["Primary"] and foregrounds["Secondary"]
             self.tokens = style["Token"]
+            self.theme_use(style["Theme"])
+
 
     
 if __name__ == "__main__":
     import tkinter as tk
 
-    def move_window(event):
-        app.geometry('+{0}+{1}'.format(event.x_root, event.y_root))
+    root = tk.Tk()
+    root.geometry("600x400")
 
-    app = tk.Tk()
-    app.overrideredirect(True)
-    screen_width = app.winfo_screenwidth()
-    screen_height = app.winfo_screenheight()
-    x_coordinate = (screen_width/2) - (1050/2)
-    y_coordinate = (screen_height/2) - (620/2)
-    app.geometry("{}x{}+{}+{}".format(1050, 650, int(x_coordinate), int(y_coordinate)))
-    title_bar = tk.Frame(app, bg='#090909', relief='raised', bd=0, height=20, width=1050)
-    close_button = tk.Button(title_bar, text='X', command=app.destroy, width=5, bg="#090909", fg="#888", bd=0)
-    title_bar.place(x=0, y=0)
-    close_button.place(rely=0, relx=1, x=0, y=0, anchor=tk.NE)
-    title_bar.bind('<B1-Motion>', move_window)
-    app.mainloop()
+    #style = JSONStyle(path="style.json")
+    style = ExtendedStyle(theme="light")
+
+    nb = ttk.Notebook()
+    nb.pack()
+
+    print(style.get_themes())
+
+    nb.add(ttk.Label(text="Hello Style"), text="Tab")
+
+    root.mainloop()

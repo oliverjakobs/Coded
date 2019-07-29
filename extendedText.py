@@ -99,7 +99,7 @@ class BetterText(tk.Text):
             self.direct_delete(index1, index2)
     
     def _is_erroneous_delete(self, index1, index2):
-        # Paste can cause deletes where index1 is sel.start but text has no selection. This would cause errors
+        """ Paste can cause deletes where index1 is sel.start but text has no selection. This would cause errors """
         return index1.startswith("sel.") and not self.has_selection()
     
     def direct_mark(self, *args):
@@ -109,7 +109,7 @@ class BetterText(tk.Text):
             self.event_generate("<<CursorMove>>")
     
     def index_sel_first(self):
-        # Tk will give error without this check
+        """ Tk will give error without this check """
         if self.tag_ranges("sel"):
             return self.index("sel.first")
         else:
@@ -125,8 +125,10 @@ class BetterText(tk.Text):
         return len(self.tag_ranges("sel")) > 0
     
     def get_selection_indices(self):
-        # If a selection is defined in the text widget, return (start,
-        # end) as Tkinter text indices, otherwise return (None, None)
+        """ 
+        If a selection is defined in the text widget, return (start,
+        end) as Tkinter text indices, otherwise return (None, None)
+        """
         if self.has_selection():
             return self.index("sel.first"), self.index("sel.last")
         else:

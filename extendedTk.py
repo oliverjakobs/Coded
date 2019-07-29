@@ -1,14 +1,15 @@
+import os
 import tkinter as tk
 
 from tkinter import ttk
 from extendedText import BetterText
 
 class AutoScrollbar(ttk.Scrollbar):
+    """ Scrollbar that is only visible when needed """
     def __init__(self, master=None, **kw):
         ttk.Scrollbar.__init__(self, master=master, **kw)
 
     def set(self, first, last):
-        """ Hide and show scrollbar as needed """
         first, last = float(first), float(last)
         if first <= 0 and last >= 1:
             self.grid_remove()
@@ -16,40 +17,98 @@ class AutoScrollbar(ttk.Scrollbar):
             self.grid()
         super().set(first, last)
 
-class FadingLabel(tk.Label):
+class FadingLabel(ttk.Label):
     """ Label that fades back to an idle text after a given time """
-    def __init__(self, master=None, delay=2500, cnf={}, **kw):
-        tk.Label.__init__(self, master, cnf, **kw)
+    def __init__(self, master=None, **kw):
+        """
+        :param delay: delay after which the text return to idle
+        """
+        self._delay = kw.pop("delay", 2500)
+        ttk.Label.__init__(self, master=master, **kw)
         self._idle_text = self["text"]
-        self._delay = delay
 
     def write(self, msg):
         self["text"] = msg
         self.after(self._delay, lambda: self.config(text=self._idle_text))
 
-class NumberedFrame(tk.Frame):
+class Fileview(ttk.Frame):
+    def __init__(self, master, path, text):
+        ttk.Frame.__init__(self, master)
+        
+        # Setup tree and its scrollbars
+        scrollY = AutoScrollbar(self, orient=tk.VERTICAL)
+        scrollX = AutoScrollbar(self, orient=tk.HORIZONTAL)
+
+        self.tree = ttk.Treeview(self)
+
+        self.tree["yscrollcommand"] = scrollY.set
+        self.tree["xscrollcommand"] = scrollX.set                                
+
+        scrollY["command"] = self.tree.yview
+        scrollX["command"] = self.tree.xview
+
+        # Fill the Treeview
+        self.tree.heading("#0", text=text, anchor=tk.W)
+        abspath = os.path.abspath(path)
+        root_node = self.tree.insert('', tk.END, text=abspath, open=True)
+        self.process_directory(root_node, abspath)
+
+        # Arrange the tree and its scrollbars in the grid
+        self.tree.grid(row=0, column=0, sticky=tk.NSEW)
+        scrollY.grid(row=0, column=1, sticky=tk.NS)
+        scrollX.grid(row=1, column=0, sticky=tk.EW)
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+    def process_directory(self, parent, path):
+        for p in os.listdir(path):
+            abspath = os.path.join(path, p)
+            isdir = os.path.isdir(abspath)
+            oid = self.tree.insert(parent, tk.END, text=p, open=False)
+            if isdir:
+                self.process_directory(oid, abspath)
+
+    def focus_name(self):
+        return self.tree.item(self.tree.focus())["text"]
+ 
+    def focus_path(self):
+        item_id = self.tree.focus()
+        path = self.tree.item(item_id)["text"]
+
+        item_id = self.tree.parent(item_id)
+        while self.tree.parent(item_id) != '':
+            path = self.tree.item(item_id)["text"] + "\\" + path
+            item_id = self.tree.parent(item_id)
+
+        return path
+
+class NumberedFrame(ttk.Frame):
     """ Decorates text with scrollbars and line numbers """
-    def __init__(self, master, first_line=1, **text_options):
-        tk.Frame.__init__(self, master=master)
+    def __init__(self, master=None, **kw):
+        """
+        :param style: 
+        """
+        style = kw.pop("style", None)
+        ttk.Frame.__init__(self, master=master)
+
+        options = kw
+
+        if style:
+            options["background"] = style.backgrounds["Primary"]
   
-        self.text = BetterText(self, text_options)
+        self.text = BetterText(self, **options)
         self.text.grid(row=0, column=1, sticky=tk.NSEW)
 
-        options = {
-            "bd" : 0,
-            "width" : 4,
-            "takefocus" : False,
-            "highlightthickness" : 0,
-            "font" : self.text["font"],
-            "background" : "#e0e0e0",
-            "foreground" : "#999999"
-        }
-
-        options.update(text_options)
+        options["bd"] = 0 
+        options["width"] = 4 
+        options["takefocus"] = False
+        options["foreground"] = style.foregrounds["Secondary"]
+        options["font"] = self.text["font"]
         
         self._line_numbers = tk.Text(self, **options)
         self._line_numbers.bind("<MouseWheel>", lambda e: "break")
-        self._set_line_numbers(first_line)
+        self._set_line_numbers(1)
         
         self._scrollY = AutoScrollbar(self, orient=tk.VERTICAL)
         self._scrollX = AutoScrollbar(self, orient=tk.HORIZONTAL)

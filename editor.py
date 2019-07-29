@@ -16,15 +16,8 @@ class Editor(ttk.Notebook):
     def add_tab(self, name, new=False, **tab_options):
         if name in self._tab_names:
             return None
-
-        options = {}
-
-        if self.style:
-            options["background"] = self.style.backgrounds["Primary"]
-
-        options.update(tab_options)
         
-        tab = NumberedFrame(self, **options)
+        tab = NumberedFrame(self, style=self.style, **tab_options)
         self.add(tab, text=name)
         self.select(tab)
 

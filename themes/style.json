@@ -1,8 +1,8 @@
 {
-    "TNotebook": {
-        "map": {
-            "background": "#363636"
-        }
+    "Theme": "black",
+    "Foreground": {
+        "Primary": "#dedede",
+        "Secondary": "#b0b0b0"
     },
     "Background": {
         "Primary": "#363636",

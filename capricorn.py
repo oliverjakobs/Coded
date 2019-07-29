@@ -10,14 +10,9 @@ from tkinter import messagebox
 
 # import own stuff
 from extendedTk import FadingLabel
-from extendedText import BetterText
-from fileview import FileView
-from editor import Editor
 from workspace import Workspace
 from style import JSONStyle
 
-
-# TODO: integrate style
 class Capricorn(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
@@ -41,11 +36,7 @@ class Capricorn(tk.Tk):
         self.columnconfigure(0, weight=1)
 
         # style
-        self.style = JSONStyle("style.json")
-
-        ttk.Style().theme_use("vista")
-
-        # print(ttk.Style().theme_names())
+        self.style = JSONStyle(path="themes/style.json")
         
         # menubar
         self.load_menu()
@@ -65,7 +56,7 @@ class Capricorn(tk.Tk):
         self.workspace.grid(row=1, column=0, sticky=tk.NSEW)
 
         # status bar
-        self.status = FadingLabel(self, text="Status", bd=1, relief=tk.SUNKEN, anchor=tk.W)
+        self.status = FadingLabel(self, text="Status")
         self.status.grid(row=2, column=0, sticky=tk.EW)
 
         # events
@@ -111,6 +102,7 @@ class Capricorn(tk.Tk):
 
         # view
         menu_view = tk.Menu(menu, tearoff=0)
+        menu_view.add_command(label="Themes")
 
         # help
         menu_help = tk.Menu(menu, tearoff=0)
