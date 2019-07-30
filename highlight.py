@@ -1,10 +1,12 @@
 
 from pygments import lex
 from pygments.lexers import PythonLexer
+from pygments.lexers import TclLexer
 
 import tkinter as tk
 from style import JSONStyle
 
+# TODO: dynamic lexer
 class Highlighter:
     def __init__(self, text, style, lexer = PythonLexer()):
         self.text = text

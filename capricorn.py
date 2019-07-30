@@ -10,6 +10,7 @@ from tkinter import messagebox
 
 # import own stuff
 from extendedTk import FadingLabel
+from toolbar import Toolbar
 from workspace import Workspace
 from style import JSONStyle
 
@@ -42,7 +43,7 @@ class Capricorn(tk.Tk):
         self.load_menu()
 
         # toolbar
-        self.toolbar = tk.Frame(self, bg="grey")
+        self.toolbar = Toolbar(self)
         self.toolbar.grid(row=0, column=0, sticky=tk.EW)
 
         # get the size of the workspace
