@@ -20,7 +20,7 @@ class Workspace(ttk.PanedWindow):
         editor_width = int(width * prop)
 
         self.editor = Editor(self, style=style, width=editor_width)
-        self.fileview = Fileview(self, path=location, text="Explorer")
+        self.fileview = Fileview(self, location=location, title="Explorer")
 
         # adding content to the workspace
         self.add(self.editor)

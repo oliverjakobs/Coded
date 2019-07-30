@@ -5,6 +5,7 @@
 set base_theme_dir [file join [pwd] [file dirname [info script]]]
 
 array set base_themes {
+  dark 0.1
   black 0.1
   light 0.1
   waldorf 0.1

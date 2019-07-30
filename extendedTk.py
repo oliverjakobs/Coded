@@ -32,8 +32,9 @@ class FadingLabel(ttk.Label):
         self.after(self._delay, lambda: self.config(text=self._idle_text))
 
 class Fileview(ttk.Frame):
-    def __init__(self, master, path, text):
-        ttk.Frame.__init__(self, master)
+    def __init__(self, master, location, **kw):
+        title = kw.pop("title", "")
+        ttk.Frame.__init__(self, master=master)
         
         # Setup tree and its scrollbars
         scrollY = AutoScrollbar(self, orient=tk.VERTICAL)
@@ -48,8 +49,8 @@ class Fileview(ttk.Frame):
         scrollX["command"] = self.tree.xview
 
         # Fill the Treeview
-        self.tree.heading("#0", text=text, anchor=tk.W)
-        abspath = os.path.abspath(path)
+        self.tree.heading("#0", text=title, anchor=tk.W)
+        abspath = os.path.abspath(location)
         root_node = self.tree.insert('', tk.END, text=abspath, open=True)
         self.process_directory(root_node, abspath)
 

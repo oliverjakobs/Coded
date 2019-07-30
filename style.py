@@ -85,12 +85,13 @@ class JSONStyle(ExtendedStyle):
     
 if __name__ == "__main__":
     import tkinter as tk
+    import ttkthemes
 
     root = tk.Tk()
     root.geometry("600x400")
 
     #style = JSONStyle(path="style.json")
-    style = ExtendedStyle(theme="light")
+    style = ExtendedStyle(theme="equilux")
 
     nb = ttk.Notebook()
     nb.pack()
