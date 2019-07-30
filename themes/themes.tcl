@@ -1,7 +1,3 @@
-# Author: RedFantom
-# License: GNU GPLv3
-# Copyright (c) 2017-2018 RedFantom
-
 set base_theme_dir [file join [pwd] [file dirname [info script]]]
 
 array set base_themes {

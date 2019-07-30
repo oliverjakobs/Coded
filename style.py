@@ -30,7 +30,7 @@ class ExtendedStyle(ttk.Style):
         """Load the themes into the Tkinter interpreter"""
         with utils.chdir_temp(utils.get_file_directory()):
             self._append_theme_dir("themes")
-            self.tk.eval("source themes/pkgIndex.tcl")
+            self.tk.eval("source themes/themes.tcl")
         
     def _append_theme_dir(self, name):
         """Append a theme dir to the Tk interpreter auto_path"""
