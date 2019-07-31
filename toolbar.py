@@ -19,30 +19,33 @@ class RunThread(threading.Thread):
 class Tooltip():
     def __init__(self, widget):
         self.widget = widget
-        self.tipWindow = None
-        self.id = None
-        self.x = self.y = 0
+        self.window = None
     
-    def showtip(self, text):
-        self.text = text
-        if self.tipWindow or not self.text:
+    def show(self, text):
+        if self.window or not text:
             return
+        # get postion
         x, y, cx, cy = self.widget.bbox("insert")
         x = x + self.widget.winfo_rootx() + 0
         y = y + cy + self.widget.winfo_rooty() + 40
-        self.tipWindow = tw = tk.Toplevel(self.widget)
-        tw.wm_overrideredirect(1)
-        tw.wm_geometry("+%d+%d" % (x, y))
+
+        self.window = tk.Toplevel(self.widget)
+        self.window.wm_overrideredirect(True)
+        self.window.wm_geometry("+%d+%d" % (x, y))
         
-        label = tk.Label(tw, text=self.text, justify=tk.LEFT,
-                         background="#e6e6e6", foreground="#424242", relief=tk.SOLID, borderwidth=1)
+        # load actual tooltip
+        label = tk.Label(self.window, text=text)
+        label["justify"] = tk.LEFT
+        label["background"] = "#e6e6e6"
+        label["foreground"] = "#424242"
+        label["relief"] = tk.SOLID
+        label["borderwidth"] = 1
         label.pack(ipadx=1)
      
-    def hidetip(self):
-        tw = self.tipWindow
-        self.tipWindow = None
-        if tw:
-            tw.destroy()
+    def hide(self):
+        if self.window:
+            self.window.destroy()
+            self.window = None
 
 class SettingsDialog(Dialog):   
     def __init__(self, master=None, cnf={}, **kw):
@@ -100,8 +103,8 @@ class Toolbar(ttk.Frame):
 
     def create_tooltip(self, widget, text):
         tooltip = Tooltip(widget)
-        widget.bind("<Enter>", lambda e: tooltip.showtip(text))
-        widget.bind("<Leave>", lambda e: tooltip.hidetip())
+        widget.bind("<Enter>", lambda e: tooltip.show(text))
+        widget.bind("<Leave>", lambda e: tooltip.hide())
 
     def interpreter(self):
         thread = RunThread("start cmd /K python")
