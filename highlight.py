@@ -38,8 +38,14 @@ class Highlighter:
             self.text.tag_add(str(token), "range_start", "range_end")
             self.text.mark_set("range_start", "range_end")
 
+    def pygmentize_lines(self, start, end):
+        """ highlight the given lines """
+        for i in range(start, end+1):
+            self.text.index("%d.0" % (i))
+            self.pygmentize_line(line_number=i)
+
     def pygmentize_current(self):
-        """ highlight the given line where the cursor is """ 
+        """ highlight the line where the cursor is """ 
         index = self.text.index(tk.INSERT).split(".")
         self.pygmentize_line(int(index[0]))
 

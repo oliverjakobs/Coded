@@ -15,14 +15,16 @@ from workspace import Workspace
 from style import JSONStyle
 
 class Capricorn(tk.Tk):
-    def __init__(self):
+    def __init__(self):     
         tk.Tk.__init__(self)
         # setup
         self.title("Capricorn")
         self.geometry("1200x800")
-        # self.iconbitmap("icon.ico")
+        
+        self.icon = tk.PhotoImage(file='capricorn.png')
+        self.iconphoto(False, self.icon)
 
-        #config
+        # config
         self.state("zoomed")
         self._filedialog_options = {
             "defaultextension" : ".txt",
@@ -153,6 +155,11 @@ class Capricorn(tk.Tk):
 if __name__ == "__main__":
     app = Capricorn()
     app.mainloop()
+
+
+
+
+
 
 
 

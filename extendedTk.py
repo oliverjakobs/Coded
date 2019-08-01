@@ -183,14 +183,49 @@ class NumberedFrame(ttk.Frame):
 
 
 ######################################################################
+# TODO: fix tooltip overshooting
+class Tooltip():
+    def __init__(self, widget):
+        self.widget = widget
+        self.window = None
+    
+    def show(self, text):
+        if self.window or not text:
+            return
+        # get postion
+        x, y, cx, cy = self.widget.bbox("insert")
+        x = x + self.widget.winfo_rootx() + 0
+        y = y + cy + self.widget.winfo_rooty() + 40
+
+        self.window = tk.Toplevel(self.widget)
+        self.window.wm_overrideredirect(True)
+        self.window.wm_geometry("+%d+%d" % (x, y))
+        
+        # load actual tooltip
+        label = tk.Label(self.window, text=text)
+        label["justify"] = tk.LEFT
+        label["background"] = "#e6e6e6"
+        label["foreground"] = "#424242"
+        label["relief"] = tk.SOLID
+        label["borderwidth"] = 1
+        label.pack(ipadx=1)
+     
+    def hide(self):
+        if self.window:
+            self.window.destroy()
+            self.window = None
+
+
+######################################################################
+
+
+######################################################################
 class Dialog(tk.Toplevel):
     def __init__(self, master=None, cnf={}, **kw):
         """
         :param title: title of the dialog
         """
         title = kw.pop("title", None)
-        pos_x = kw.pop("pos_x", 0)
-        pos_y = kw.pop("pos_y", 0)
 
         tk.Toplevel.__init__(self, master, cnf, **kw)
         self.transient(master)

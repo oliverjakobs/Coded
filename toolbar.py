@@ -1,51 +1,11 @@
 import os
-import threading
 import tkinter as tk
 from tkinter import ttk
 from extendedTk import Dialog
+from extendedTk import Tooltip
 
-class RunThread(threading.Thread):
-    def __init__(self, command):
-        threading.Thread.__init__(self)
-        self.command = command
-    
-    def run(self):
-        try:
-            os.system(self.command)
-        except Exception as e:
-            print(str(e))
+from utils import SubshellThread
 
-# TODO: fix tooltip overshooting
-class Tooltip():
-    def __init__(self, widget):
-        self.widget = widget
-        self.window = None
-    
-    def show(self, text):
-        if self.window or not text:
-            return
-        # get postion
-        x, y, cx, cy = self.widget.bbox("insert")
-        x = x + self.widget.winfo_rootx() + 0
-        y = y + cy + self.widget.winfo_rooty() + 40
-
-        self.window = tk.Toplevel(self.widget)
-        self.window.wm_overrideredirect(True)
-        self.window.wm_geometry("+%d+%d" % (x, y))
-        
-        # load actual tooltip
-        label = tk.Label(self.window, text=text)
-        label["justify"] = tk.LEFT
-        label["background"] = "#e6e6e6"
-        label["foreground"] = "#424242"
-        label["relief"] = tk.SOLID
-        label["borderwidth"] = 1
-        label.pack(ipadx=1)
-     
-    def hide(self):
-        if self.window:
-            self.window.destroy()
-            self.window = None
 
 class SettingsDialog(Dialog):   
     def __init__(self, master=None, cnf={}, **kw):
@@ -107,15 +67,15 @@ class Toolbar(ttk.Frame):
         widget.bind("<Leave>", lambda e: tooltip.hide())
 
     def interpreter(self):
-        thread = RunThread("start cmd /K python")
+        thread = SubshellThread("start cmd /K python")
         thread.start()
 
     def terminal(self):
-        thread = RunThread("start cmd")
+        thread = SubshellThread("start powershell")
         thread.start()
 
     def run(self):
-        thread = RunThread("start cmd " + self.run_cmd)
+        thread = SubshellThread("start cmd " + self.run_cmd)
         thread.start()
 
     def settings_run(self, event=None):

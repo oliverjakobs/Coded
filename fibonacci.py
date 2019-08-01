@@ -9,7 +9,8 @@ def fibonacci(n):
     else: 
         return fibonacci(n - 1) + fibonacci(n - 2)
 
-n = 9
+n = 10
 
 print("{0}. fibonacci number".format(n))
 print(fibonacci(n)) 
+

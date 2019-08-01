@@ -48,7 +48,7 @@ class Workspace(ttk.PanedWindow):
             return 1, filename
 
         try:
-            text.insert_from_file(filename)
+            text.read(filename)
             return 0, filename
         except UnicodeDecodeError as e:
             messagebox.showerror("UnicodeDecodeError", "Could not open {0}: \n{1}".format(filename, e))
@@ -64,8 +64,7 @@ class Workspace(ttk.PanedWindow):
                 filename = self.editor.get_name()
                 if self.editor.get_new(filename):
                     return 1, filename
-            with open(filename, "w") as f:
-                f.write(self.editor.get_text().get(1.0, tk.END))
+            self.editor.get_text().write(filename)
             self.editor.set_name(filename)
             return 0, filename
         except Exception as e:
