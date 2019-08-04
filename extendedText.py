@@ -8,7 +8,6 @@ from highlight import Highlighter
 import traceback
 import time
 
-
 def index_to_line(index):
     """ convert a tkinter index to the matching line number """
     return int(float(index))

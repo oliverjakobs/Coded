@@ -26,9 +26,12 @@ class SettingsDialog(Dialog):
     def apply(self):
         self.result = self.entry.get()
 
-class Toolbar(ttk.Frame):
+class Toolbar(tk.Frame):
     def __init__(self, master=None, **kw):
-        ttk.Frame.__init__(self, master=master, **kw)
+        tk.Frame.__init__(self, master=master, **kw)
+
+        # style
+        self.configure(bg=ttk.Style().lookup("Label", "background"))
 
         images = os.getcwd() + "/images/"
 

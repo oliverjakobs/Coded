@@ -18,6 +18,10 @@ namespace eval ttk::theme::dark {
         -darkest	    "#000000"
         -lighter	    "#626262"
         -lightest   	"#ffffff"
+        -fg_primary     "#dedede"
+        -fg_secondary   "#b0b0b0"
+        -bg_primary     "#363636"
+        -bg_secondary   "#424242"
     }
         
     # Create a new ttk::style
@@ -119,10 +123,16 @@ namespace eval ttk::theme::dark {
         # Dialog
         ttk::style configure Diaolog -background $colors(-bg)
 
-        # Label
+        # Labels
+        ttk::style configure Label -background $colors(-darker)
+
+        # extendedTk
+        ttk::style configure FadingLabel    -background $colors(-darker) \
+                                            -foreground $colors(-fg) \
+                                            -anchor w
 
         # Settings
-        ttk::style configure TButton -padding {8 4 8 4} -width -10 -anchor center
+        ttk::style configure TButton -padding {8 4 8 4} -width -10 -anchor center -background $colors(-darker)
         ttk::style configure TMenubutton -padding {8 4 4 4}
         ttk::style configure Toolbutton -anchor center
         ttk::style configure TCheckbutton -padding 3

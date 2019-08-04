@@ -25,7 +25,7 @@ class Capricorn(tk.Tk):
         self.iconphoto(False, self.icon)
 
         # config
-        self.state("zoomed")
+        # self.state("zoomed")
         self._filedialog_options = {
             "defaultextension" : ".txt",
             "filetypes": [
