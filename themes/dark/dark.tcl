@@ -39,7 +39,6 @@ namespace eval ttk::theme::dark {
         ttk::style map . -foreground [list disabled $colors(-disabledfg)]
         
         # WIDGET LAYOUTS
-        
         ttk::style layout TButton {
             Button.button -children {
                 Button.focus -children {
@@ -113,6 +112,14 @@ namespace eval ttk::theme::dark {
         }
 
         # Style elements
+        
+        # Text 
+        ttk::style configure Text -background $colors(-bg)
+
+        # Dialog
+        ttk::style configure Diaolog -background $colors(-bg)
+
+        # Label
 
         # Settings
         ttk::style configure TButton -padding {8 4 8 4} -width -10 -anchor center

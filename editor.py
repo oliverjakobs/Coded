@@ -21,7 +21,7 @@ class Editor(ttk.Notebook):
         self.add(tab, text=name)
         self.select(tab)
 
-        tab.text.set_highlighter(Highlighter(tab.text, self.style))
+        tab.text.highlighter = Highlighter(tab.text, self.style)
 
         # add to list
         self._tab_texts.append(tab.text)

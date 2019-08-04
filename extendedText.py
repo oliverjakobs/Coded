@@ -37,7 +37,7 @@ def create_whitespaces(n, tabwidth, usetabs):
 
 class ExtendedText(tk.Text):
     """ Allows intercepting Text commands at Tcl-level """
-    def __init__(self, master=None, cnf={}, read_only=False, **kw):
+    def __init__(self, master=None, **kw):
         """
         :param read_only: 
         :param highlighter:
@@ -50,7 +50,11 @@ class ExtendedText(tk.Text):
         self.tabwidth = kw.pop("tabwidth", 8)
         self.indentwidth = kw.pop("indentwidth", 4)
         self.usetabs = kw.pop("usetabs", False) 
-        tk.Text.__init__(self, master=master, cnf=cnf, **kw)
+
+        tk.Text.__init__(self, master=master, **kw)
+
+        # style
+        self.configure(bg=ttk.Style().lookup("Text", "background"))
         
         self._w_orig = self._w + "_orig"
         self.tk.call("rename", self._w, self._w_orig)
