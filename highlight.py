@@ -18,9 +18,8 @@ class Highlighter:
             self.text.tag_configure("Token." + t, foreground=style.tokens[t])
 
     def clean(self, start, end):
-        """ remove all tags from all characters between start and end """
-        for tag in self.text.tag_names():
-            self.text.tag_remove(tag, start, end)
+        """ remove all token related tags from all characters between start and end """
+        [self.text.tag_remove(tag, start, end) for tag in self.text.tag_names() if tag.startswith("Token.")]
     
     def pygmentize_line(self, line_number):
         """ highlight the given line """

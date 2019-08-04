@@ -37,7 +37,7 @@ class Capricorn(tk.Tk):
 
         self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
-
+        
         # style
         self.style = JSONStyle(path="themes/style.json")
         
@@ -155,6 +155,7 @@ class Capricorn(tk.Tk):
 if __name__ == "__main__":
     app = Capricorn()
     app.mainloop()
+
 
 
 

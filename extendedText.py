@@ -8,35 +8,49 @@ from highlight import Highlighter
 import traceback
 import time
 
-def classifyws(s, tabwidth):
+
+def index_to_line(index):
+    """ convert a tkinter index to the matching line number """
+    return int(float(index))
+
+def classify_whitespaces(string, tabwidth):
+    """ calculate the whitespaces raw and effective length """
     raw = effective = 0
-    for ch in s:
-        if ch == ' ':
+    for ch in string:
+        if ch == " ":
             raw = raw + 1
             effective = effective + 1
-        elif ch == '\t':
+        elif ch == "\t":
             raw = raw + 1
             effective = (effective // tabwidth + 1) * tabwidth
         else:
             break
     return raw, effective
 
+def create_whitespaces(n, tabwidth, usetabs):
+    """ cerate a string that displays as n leading whitespaces """
+    if usetabs:
+        tabs, spaces = divmod(n, tabwidth)
+        return "\t" * tabs + " " * spaces
+    else:
+        return " " * n
 
-def index2line(index):
-    return int(float(index))
-
-class BetterText(tk.Text):
+class ExtendedText(tk.Text):
     """ Allows intercepting Text commands at Tcl-level """
     def __init__(self, master=None, cnf={}, read_only=False, **kw):
+        """
+        :param read_only: 
+        :param highlighter:
+        :param tabwidth:
+        :param indentwidth:
+        :param usetabs: 
+        """
+        self._read_only = kw.pop("read_only", False)
+        self.highlighter = kw.pop("highlighter", None)
+        self.tabwidth = kw.pop("tabwidth", 8)
+        self.indentwidth = kw.pop("indentwidth", 4)
+        self.usetabs = kw.pop("usetabs", False) 
         tk.Text.__init__(self, master=master, cnf=cnf, **kw)
-        
-        self._read_only = read_only
-        self.highlighter = None
-
-        # indent
-        self.tabwidth = 8 # See comments in idlelib.EditorWindow 
-        self.indentwidth = 4 
-        self.usetabs = False
         
         self._w_orig = self._w + "_orig"
         self.tk.call("rename", self._w, self._w_orig)
@@ -47,15 +61,23 @@ class BetterText(tk.Text):
         self._original_delete = self._register_tk_proxy_function("delete", self.intercept_delete)
         self._original_mark = self._register_tk_proxy_function("mark", self.intercept_mark)
 
+        self.tk.call("tcl_wordBreakAfter", "a b", 0) # make sure word.tcl is loaded
+        self.tk.call("set", "tcl_wordchars",     "[a-zA-Z0-9_À-ÖØ-öø-ÿĀ-ſƀ-ɏА-я]")
+        self.tk.call("set", "tcl_nonwordchars", "[^a-zA-Z0-9_À-ÖØ-öø-ÿĀ-ſƀ-ɏА-я]")
+
         # events
         self.bind("<Control-z>", lambda e: self.edit_undo)
         self.bind("<Control-y>", lambda e: self.edit_redo)
-        self.bind("<Tab>", self.indent_or_dedent, True)
+
+        #self.bind("<BackSpace>", self.backspace, True)
+        self.bind("<Tab>", self.indent, True)
+        self.bind("<Shift-Tab>", self.dedent_region, True)
 
 ######################################################################
 # tk funtions
 ######################################################################
     def _register_tk_proxy_function(self, operation, function):
+        """ register a proxy function for a given operation """
         self._tk_proxies[operation] = function
         setattr(self, operation, function)
         
@@ -74,51 +96,34 @@ class BetterText(tk.Text):
             
         except TclError as e:
             # Some Tk internal actions (eg. paste and cut) can cause this error
-            if (str(e).lower() == '''text doesn't contain any characters tagged with "sel"'''
+            if (str(e).lower() == """text doesn"t contain any characters tagged with "sel" """
                 and operation in ["delete", "index", "get"] 
                 and args in [("sel.first", "sel.last"), ("sel.first",)]):
                 pass
             else:
                 traceback.print_exc()
-
-######################################################################
-# Utility funtions
-######################################################################
-    def set_highlighter(self, highlighter):
-        self.highlighter = highlighter
-    
-    def set_read_only(self, value):
-        self._read_only = value
-    
-    def is_read_only(self):
-        return self._read_only
-
-    def set_content(self, chars):
-        self.direct_delete("1.0", tk.END)
-        self.direct_insert("1.0", chars)
         
 ######################################################################
 # Intercept funtions
 ######################################################################
     def intercept_mark(self, *args):
+        """ intercept mark calls """
         self.direct_mark(*args)
     
     def intercept_insert(self, index, chars, tags=None):
+        """ intercept insert calls process them and send them on to direct_insert """
         if chars >= "\uf704" and chars <= "\uf70d": # Function keys F1..F10 in Mac cause these
             pass
-        elif self.is_read_only():
+        elif self._read_only:
             self.bell()
         else:
             self.direct_insert(index, chars, tags)
     
     def intercept_delete(self, index1, index2=None):
-        if self.is_read_only():
+        if self._read_only:
             self.bell()            
-        elif index1.startswith("sel.") and not self.has_selection():
-            """ 
-            Paste can cause deletes where index1 is sel.start but 
-            text has no selection. This would cause errors
-            """
+        elif index1.startswith("sel.") and not self.selection():
+            # Possible Error: paste can cause deletes where index1 is sel.start but text has no selection
             pass
         else:
             self.direct_delete(index1, index2)
@@ -127,18 +132,23 @@ class BetterText(tk.Text):
 # Direct funtions
 ######################################################################
     def direct_mark(self, *args):
+        """ mark the text and generate <<InsertMove>> event if the insertion cursor moved """
         self._original_mark(*args)
-        
-        if args[:2] == ("set", "insert"):
-            self.event_generate("<<CursorMove>>")
+        if args[0] == "set" and (args[1] == "insert" or 
+        (args[1] == "range_start" and not args[2].startswith("range"))):
+            self.event_generate("<<InsertMove>>")
 
     def direct_insert(self, index, chars, tags=None):
+        """ insert chars at index, highlight the text afterwards (if text has a highlighter) 
+        and generate a <<TextChange>> event """
         self._original_insert(index, chars, tags)
         if self.highlighter:
             self.highlighter.pygmentize_current()
         self.event_generate("<<TextChange>>")
     
     def direct_delete(self, index1, index2=None):
+        """ delete chars between index1 and index2 (not included), highlight the text afterwards
+        (if text has a highlighter) and generate a <<TextChange>> event """
         self._original_delete(index1, index2)
         if self.highlighter:
             self.highlighter.pygmentize_current()
@@ -147,66 +157,19 @@ class BetterText(tk.Text):
 ######################################################################
 # Selection funtions
 ######################################################################
-    def index_sel_first(self):
-        """ Tk will give error without this check """
-        if self.tag_ranges("sel"):
-            return self.index("sel.first")
-        else:
-            return None
+    def selection(self):
+        return self.tag_ranges("sel")
     
-    def index_sel_last(self):
-        if self.tag_ranges("sel"):
-            return self.index("sel.last")
-        else:
-            return None
-
-    def has_selection(self):
-        return len(self.tag_ranges("sel")) > 0
-    
-    def get_selection_indices(self):
-        """ 
-        If a selection is defined in the text widget, return (start,
-        end) as Tkinter text indices, otherwise return (None, None)
-        """
-        if self.has_selection():
+    def get_selection(self):
+        """ If a selection is defined, return (start, end) as Tkinter text indices, 
+        otherwise return (None, None) """
+        if self.selection():
             return self.index("sel.first"), self.index("sel.last")
         else:
             return None, None
-        
-######################################################################
-# File funtions
-######################################################################
-    def read(self, filename):
-        with open(filename, "r") as f:
-            self.insert(1.0, f.read())
-        if self.highlighter:
-            self.highlighter.pygmentize_all()
 
-    def write(self, filename):
-        with open(filename, "w") as f:
-            f.write(self.get(1.0, tk.END))
-
-######################################################################
-# ident/detent
-######################################################################
-    def _make_blanks(self, n):
-        # Make string that displays as n leading blanks.
-        if self.usetabs:
-            ntabs, nspaces = divmod(n, self.tabwidth)
-            return '\t' * ntabs + ' ' * nspaces
-        else:
-            return ' ' * n
-
-    def _reindent_to(self, column):
-        # Delete from beginning of line to insert point, then reinsert
-        # column logical (meaning use tabs if appropriate) spaces.
-        if self.compare("insert linestart", "!=", "insert"):
-            self.delete("insert linestart", "insert")
-        if column:
-            self.insert("insert", self._make_blanks(column))
-
-    def _get_region(self):
-        first, last = self.get_selection_indices()
+    def get_region(self):
+        first, last = self.get_selection()
         if first and last:
             head = self.index(first + " linestart")
             tail = self.index(last + "-1c lineend +1c")
@@ -217,7 +180,7 @@ class BetterText(tk.Text):
         lines = chars.split("\n")
         return head, tail, chars, lines
 
-    def _set_region(self, head, tail, chars, lines):
+    def set_region(self, head, tail, chars, lines):
         newchars = "\n".join(lines)
         if newchars == chars:
             self.bell()
@@ -228,75 +191,129 @@ class BetterText(tk.Text):
         self.insert(head, newchars)
         self.tag_add("sel", head, "insert")
 
-    def perform_smart_tab(self, event=None):        
-        """
-        if intraline selection:
-            delete it
-        elif multiline selection:
-            do indent-region
-        else:
-            indent one level
-        """
+    def modify_region(self, modifier):
+        head, tail, chars, lines = self.get_region()
+        self.set_region(head, tail, chars, [modifier(line) if line else "" for line in lines])
 
-        first, last = self.get_selection_indices()
+        if self.highlighter:
+            self.highlighter.pygmentize_lines(index_to_line(head), index_to_line(tail))
+        
+######################################################################
+# File funtions
+######################################################################
+    def read(self, filename):
+        """ read the content of the file and insert it into the widget """
+        with open(filename, "r") as f:
+            self.insert(1.0, f.read())
+        if self.highlighter:
+            self.highlighter.pygmentize_all()
+
+    def write(self, filename):
+        """ write the content of the widget and into the file """
+        with open(filename, "w") as f:
+            f.write(self.get(1.0, tk.END))
+
+######################################################################
+# indent/dedent
+######################################################################
+    def indent(self, event=None):    
+        """ if there is a multiline selection indent the selected region and return
+        if there is a itraline selection delete it and indent afterwards
+        if there is no selection just indent one level """
+        first, last = self.get_selection()
         if first and last:
-            if index2line(first) != index2line(last):
+            # multiline selection
+            if index_to_line(first) != index_to_line(last):
                 return self.indent_region(event)
             self.delete(first, last)
             self.mark_set("insert", first)
+        
+        # get text from linestart to insertion cursor
         prefix = self.get("insert linestart", "insert")
-        raw, effective = classifyws(prefix, self.tabwidth)
-        if raw == len(prefix):
-            # only whitespace to the left
-            self._reindent_to(effective + self.indentwidth)
+        raw, effective = classify_whitespaces(prefix, self.tabwidth)
+        # tab to the next "stop" within or to right of line"s text:
+        if self.usetabs:
+            pad = "\t"
         else:
-            # tab to the next 'stop' within or to right of line's text:
-            if self.usetabs:
-                pad = '\t'
-            else:
-                effective = len(prefix.expandtabs(self.tabwidth))
-                n = self.indentwidth
-                pad = ' ' * (n - effective % n)
-            self.insert("insert", pad)
+            effective = len(prefix.expandtabs(self.tabwidth))
+            pad = " " * (self.indentwidth - effective % self.indentwidth)
+        self.insert("insert", pad)
         self.see("insert")
         return "break"
 
-    def indent_or_dedent(self, event=None):
-        if event.state in [1,9]: # shift is pressed (1 in Mac, 9 in Win)
-            return self.dedent_region(event)
-        else:
-            return self.perform_smart_tab(event)  
-
     def indent_region(self, event=None):
-        head, tail, chars, lines = self._get_region()
-        for pos in range(len(lines)):
-            line = lines[pos]
-            if line:
-                raw, effective = classifyws(line, self.tabwidth)
-                effective = effective + self.indentwidth
-                lines[pos] = self._make_blanks(effective) + line[raw:]
-        self._set_region(head, tail, chars, lines)
+        """ indent the selected region """
+        def modifier(line):
+            raw, effective = classify_whitespaces(line, self.tabwidth)
+            effective = effective + self.indentwidth
+            return create_whitespaces(effective, self.tabwidth, self.usetabs) + line[raw:]
+
+        self.modify_region(modifier)
         return "break"
 
     def dedent_region(self, event=None):
-        head, tail, chars, lines = self._get_region()
-        for pos in range(len(lines)):
-            line = lines[pos]
-            if line:
-                raw, effective = classifyws(line, self.tabwidth)
-                effective = max(effective - self.indentwidth, 0)
-                lines[pos] = self._make_blanks(effective) + line[raw:]
-        self._set_region(head, tail, chars, lines)
+        """ dedent the selected region """
+        def modifier(line):
+            raw, effective = classify_whitespaces(line, self.tabwidth)
+            effective = max(effective - self.indentwidth, 0)
+            return create_whitespaces(effective, self.tabwidth, self.usetabs) + line[raw:]
+
+        self.modify_region(modifier)
         return "break"
 
+######################################################################
+# backspace
+######################################################################
+    def backspace(self, event):
+        """ extended backspace function """
+        # TODO: delete indentation
+        first, last = self.get_selection()
+        if first and last:
+            self.delete(first, last)
+            self.mark_set("insert", first)
+            return "break"
+        # Delete whitespace left, until hitting a real char or closest
+        # preceding virtual tab stop.
+        chars = self.get("insert linestart", "insert")
+        if chars == "":
+            if self.compare("insert", ">", "1.0"):
+                self.delete("insert-1c")
+            else:
+                self.bell()     # at start of buffer
+            return "break"
+        
+        if  chars[-1] not in " \t":
+            self.delete("insert-1c")
+            return "break"
+
+        self.delete("insert-1c")
+        return "break"
 
 if __name__ == "__main__":
+    from style import JSONStyle
+
     root = tk.Tk()
     root.geometry("600x400")
 
-    text = BetterText(root)
+    style = JSONStyle(path="themes/style.json")
+
+    text = ExtendedText(root)
+    text.highlighter = Highlighter(text, style)
     text.pack()
 
+    label_text = tk.StringVar()
+    label = tk.Label(root, textvariable=label_text)
+    label_text.set("Ln: -| Col: -")
+
+    label.pack()
+
+    def update_label(event=None):
+        ln, col = text.index("insert").split(".")
+        label_text.set("Ln: {}| Col: {}".format(ln, col))
+
+    text.bind("<<InsertMove>>", update_label)
+
+    text.read("fibonacci.py")
 
     root.mainloop()
 

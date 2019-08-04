@@ -2,7 +2,7 @@ import os
 import tkinter as tk
 
 from tkinter import ttk
-from extendedText import BetterText
+from extendedText import ExtendedText
 
 class AutoScrollbar(ttk.Scrollbar):
     """ Scrollbar that is only visible when needed """
@@ -108,7 +108,7 @@ class NumberedFrame(ttk.Frame):
         if style:
             options["background"] = style.backgrounds["Primary"]
   
-        self.text = BetterText(self, **options)
+        self.text = ExtendedText(self, **options)
         self.text.grid(row=0, column=1, sticky=tk.NSEW)
 
         options["bd"] = 0 
