@@ -39,15 +39,12 @@ class FadingLabel(ttk.Label):
         ttk.Label.__init__(self, master=master, **kw)
         self._idle_text = self["text"]
 
-        style_configure(self, "FadingLabel")
-
     def write(self, msg):
         self["text"] = msg
         self.after(self._delay, lambda: self.config(text=self._idle_text))
 
 
 ######################################################################
-
 
 ######################################################################
 class Fileview(ttk.Frame):
@@ -105,7 +102,6 @@ class Fileview(ttk.Frame):
 
 
 ######################################################################
-
 
 ######################################################################
 class NumberedFrame(ttk.Frame):
@@ -279,7 +275,7 @@ class Dialog(tk.Toplevel):
         create dialog body.  return widget that should have
         initial focus.  this method should be overridden
         """
-        pass
+        return None
 
     def buttonbox(self):
         """ add standard button box. override if you don't want the standard buttons """
@@ -316,3 +312,4 @@ class Dialog(tk.Toplevel):
 
     def apply(self):
         pass # override
+

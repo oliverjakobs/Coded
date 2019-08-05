@@ -233,7 +233,6 @@ class ExtendedText(tk.Text):
         
         # get text from linestart to insertion cursor
         prefix = self.get("insert linestart", "insert")
-        raw, effective = classify_whitespaces(prefix, self.tabwidth)
         # tab to the next "stop" within or to right of line"s text:
         if self.usetabs:
             pad = "\t"
@@ -310,9 +309,10 @@ if __name__ == "__main__":
 
     label.pack()
 
-    def update_label(event=None):
-        ln, col = text.index("insert").split(".")
+    def update_label(event):
+        ln, col = event.widget.index("insert").split(".")
         label_text.set("Ln: {}| Col: {}".format(ln, col))
+        
 
     text.bind("<<InsertMove>>", update_label)
 

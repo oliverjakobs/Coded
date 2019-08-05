@@ -11,6 +11,7 @@ from tkinter import messagebox
 # import own stuff
 from extendedTk import FadingLabel
 from toolbar import Toolbar
+from statusbar import Statusbar
 from workspace import Workspace
 from style import JSONStyle
 
@@ -59,14 +60,16 @@ class Capricorn(tk.Tk):
         self.workspace.grid(row=1, column=0, sticky=tk.NSEW)
 
         # status bar
-        self.status = FadingLabel(self, text="Status")
-        self.status.grid(row=2, column=0, sticky=tk.EW)
+        self.statusbar = Statusbar(self)
+        self.statusbar.grid(row=2, column=0, sticky=tk.EW)
 
         # events
         self.bind_all("<Control-n>", self.new_file)
         self.bind_all("<Control-t>", self.open_file)
         self.bind_all("<Control-s>", self.save)
         self.bind_all("<Control-S>", self.save_as)
+        
+        self.bind("<<InsertMove>>", self.statusbar.update_insert_label)
 
         # Command Line Arguments
         for arg in sys.argv[1:]:
@@ -126,20 +129,20 @@ class Capricorn(tk.Tk):
         if filename:
             result, filename = self.workspace.load_tab(os.path.relpath(filename))
             if result > 0:
-                self.status.write("{0} already open".format(filename))
+                self.statusbar.write("{0} already open".format(filename))
             elif result < 0:
-                self.status.write("[Error]: Failed to open {0}".format(filename))
+                self.statusbar.write("[Error]: Failed to open {0}".format(filename))
             else:
-                self.status.write("Open {0}".format(filename))
+                self.statusbar.write("Open {0}".format(filename))
 
     def save(self, *args):
         result, filename = self.workspace.save_tab()
         if result > 0:
             self.save_as()
         elif result < 0:
-            self.status.write("[Error]: Failed to save {0}".format(filename))
+            self.statusbar.write("[Error]: Failed to save {0}".format(filename))
         else:
-            self.status.write("Successfully saved {0}".format(filename))
+            self.statusbar.write("Successfully saved {0}".format(filename))
 
     def save_as(self, *args):
         filename = filedialog.asksaveasfilename(**self._filedialog_options)
@@ -147,14 +150,15 @@ class Capricorn(tk.Tk):
         if filename:
             result, filename = self.workspace.save_tab(os.path.relpath(filename))
             if result == 0:
-                self.status.write("Successfully saved {0}".format(filename))
+                self.statusbar.write("Successfully saved {0}".format(filename))
             else:
-                self.status.write("[Error]: Failed to save {0}".format(filename))
+                self.statusbar.write("[Error]: Failed to save {0}".format(filename))
 
 
 if __name__ == "__main__":
     app = Capricorn()
     app.mainloop()
+
 
 
 
