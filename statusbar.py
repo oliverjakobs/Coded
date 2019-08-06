@@ -2,21 +2,22 @@ import tkinter as tk
 from tkinter import ttk
 
 from extendedTk import FadingLabel
-from extendedTk import style_configure
+from extendedStyle import style_configure
 
 class Statusbar(tk.Frame):
     def __init__(self, master=None, **kw):
         tk.Frame.__init__(self, master, {}, **kw)
 
-        self.configure(background="#0057a8")
-
         self.status = FadingLabel(self, text="Status")
-        self.status.configure(background="#0057a8")
 
         self.insert_pos = tk.StringVar()
         label = ttk.Label(self, textvariable=self.insert_pos)
-        label.configure(background="#0057a8")
         self.insert_pos.set("Ln: -| Col: -")
+
+        # style 
+        style_configure(self, "Statusbar")
+        style_configure(self.status, "Statusbar.Child")
+        style_configure(label, "Statusbar.Child")
 
         # grid
         self.columnconfigure(1, weight=1)

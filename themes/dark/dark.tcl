@@ -18,10 +18,7 @@ namespace eval ttk::theme::dark {
         -darkest	    "#000000"
         -lighter	    "#626262"
         -lightest   	"#ffffff"
-        -fg_primary     "#dedede"
-        -fg_secondary   "#b0b0b0"
-        -bg_primary     "#363636"
-        -bg_secondary   "#424242"
+        -blue           "#0057a8"
     }
         
     # Create a new ttk::style
@@ -130,6 +127,10 @@ namespace eval ttk::theme::dark {
         ttk::style configure FadingLabel    -background $colors(-darker) \
                                             -foreground $colors(-fg) \
                                             -anchor w
+
+        # Capricorn
+        ttk::style configure Statusbar -background $colors(-blue)
+        ttk::style configure Statusbar.Child -background $colors(-blue)
 
         # Settings
         ttk::style configure TButton -padding {8 4 8 4} -width -10 -anchor center -background $colors(-darker)

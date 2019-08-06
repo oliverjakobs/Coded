@@ -3,7 +3,7 @@ from tkinter import ttk
 
 from extendedTk import NumberedFrame
 from highlight import Highlighter
-from style import JSONStyle
+from extendedStyle import JSONStyle
 
 class Editor(ttk.Notebook):
     def __init__(self, master, style, **kw):
@@ -80,6 +80,6 @@ if __name__ == "__main__":
 
     text = editor.add_tab(filename, True, wrap=tk.NONE, bd=0, padx=5, pady=5, bg="#363636")
 
-    text.insert_from_file(filename)
+    text.read(filename)
 
     root.mainloop()

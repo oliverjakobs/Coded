@@ -292,7 +292,7 @@ class ExtendedText(tk.Text):
         return "break"
 
 if __name__ == "__main__":
-    from style import JSONStyle
+    from extendedStyle import JSONStyle
 
     root = tk.Tk()
     root.geometry("600x400")

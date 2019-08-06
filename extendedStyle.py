@@ -1,7 +1,17 @@
 import json
+import tkinter as tk
 from tkinter import ttk
 
 import utils
+
+def style_configure(widget, name):
+    kw = {}
+    for key in widget.keys():
+        value = ttk.Style().lookup(name, key)
+        if value:
+            kw[key] = value
+
+    widget.configure(**kw)
 
 # TODO: adjust themes
 class ExtendedStyle(ttk.Style):
@@ -85,7 +95,6 @@ class JSONStyle(ExtendedStyle):
     
 if __name__ == "__main__":
     import tkinter as tk
-    import ttkthemes
 
     root = tk.Tk()
     root.geometry("600x400")

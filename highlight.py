@@ -4,7 +4,7 @@ from pygments.lexers import PythonLexer
 from pygments.lexers import TclLexer
 
 import tkinter as tk
-from style import JSONStyle
+from extendedStyle import JSONStyle
 
 # TODO: dynamic lexer
 class Highlighter:

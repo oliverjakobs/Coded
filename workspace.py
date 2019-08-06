@@ -4,7 +4,7 @@ from tkinter import messagebox
 
 from editor import Editor
 from extendedTk import Fileview
-from style import JSONStyle
+from extendedStyle import JSONStyle
 
 import os
 

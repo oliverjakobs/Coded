@@ -1,150 +1,164 @@
-# light.tcl -
-#
-#   Experimental!
-#
-#  Copyright (c) 2007-2008 Mats Bengtsson
-#
-# $Id: light.tcl,v 1.2 2009/10/25 19:21:30 oberdorfer Exp $
-
-package require Tk 8.4;                 # minimum version for Tile
-package require tile 0.8;               # depends upon tile
-
-
-namespace eval ttk {
-  namespace eval theme {
-    namespace eval light {
-      variable version 0.1
-    }
-  }
-}
-
+# Theme light
 namespace eval ttk::theme::light {
+    
+    # Widget colors
+    variable colors
+    array set colors {
+        -fg             "#dedede"
+        -bg             "#363636"
+        -disabledbg     "#2e2e2e"
+        -disabledfg     "#999999"
+        -selectbg       "#414141"
+        -selectfg       "#a6a6a6"
+        -window         "#373737"
+        -focuscolor     "#bebebe"
+        -checklight     "#e6e6e6"
+        -dark	          "#222222"
+        -darker 	      "#626262"
+        -darkest	      "#000000"
+        -lighter	      "#626262"
+        -lightest   	  "#ffffff"
+        -blue           "#0057a8"
+    }
+        
+    # Create a new ttk::style
+    ttk::style theme create light -parent default -settings {
+        # Configure basic style settings
+        ttk::style configure . \
+            -background $colors(-bg) \
+            -foreground $colors(-fg) \
+            -troughcolor $colors(-bg) \
+            -bordercolor $colors(-lightest) \
+            -selectbackground $colors(-selectbg) \
+            -selectforeground $colors(-selectfg) \
+            -fieldbackground $colors(-window) \
+            -font TkDefaultFont \
+            -borderwidth 1 \
+            -focuscolor $colors(-focuscolor)
+        
+        # Map disabled colors to disabledfg
+        ttk::style map . -foreground [list disabled $colors(-disabledfg)]
+        
+        # WIDGET LAYOUTS
+        ttk::style layout TButton {
+            Button.button -children {
+                Button.focus -children {
+                    Button.padding -children {
+                        Button.label -side left -expand true
+                    }
+                }
+            }
+        }
 
-  #variable imgdir [file join [file dirname [info script]] light]
-  #variable I
-  #array set I [tile::LoadImages $imgdir *.png]
+        ttk::style layout Toolbutton {
+            Toolbutton.button -children {
+                Toolbutton.focus -children {
+                    Toolbutton.padding -children {
+                        Toolbutton.label -side left -expand true
+                    }
+                }
+            }
+        }
 
-  variable dir [file dirname [info script]]
+        ttk::style layout Vertical.TScrollbar {
+            Vertical.Scrollbar.trough -sticky ns -children {
+                Vertical.Scrollbar.thumb -expand true
+            }
+        }
 
-  # NB: These colors must be in sync with the ones in light.rdb
+        ttk::style layout Horizontal.TScrollbar {
+            Horizontal.Scrollbar.trough -sticky ew -children {
+                Horizontal.Scrollbar.thumb -expand true
+            }
+        }
 
-  variable colors
-  array set colors {
-    -disabledfg	"LightGrey"
-    -frame  	"#424242"
-    -dark	    "#222222"
-    -darker 	"#121212"
-    -darkest	"White"
-    -lighter	"#626262"
-    -lightest 	"#ffffff"
-    -selectbg	"#4a6984"
-    -selectfg	"#ffffff"
-  }
-  if {[info commands ::ttk::style] ne ""} {
-    set styleCmd ttk::style
-  } else {
-    set styleCmd style
-  }
+        ttk::style layout TMenubutton {
+            Menubutton.button -children {
+                Menubutton.focus -children {
+                    Menubutton.padding -children {
+                        Menubutton.indicator -side right
+                        Menubutton.label -side right -expand true
+                    }
+                }
+            }
+        }
 
-  $styleCmd theme create light -parent clam -settings {
+        ttk::style layout TCombobox {
+            Combobox.field -sticky nswe -children {
+                Combobox.downarrow -side right -sticky ns -children {
+                    Combobox.arrow -side right
+                }
+                Combobox.padding -expand true -sticky nswe -children {
+                    Combobox.textarea -sticky nswe
+                }
+            }
+        }
 
-    # -----------------------------------------------------------------
-    # Theme defaults
-    #
-    $styleCmd configure "." \
-        -background $colors(-frame) \
-        -foreground white \
-        -bordercolor $colors(-darkest) \
-        -darkcolor $colors(-dark) \
-        -lightcolor $colors(-lighter) \
-        -troughcolor $colors(-darker) \
-        -selectbackground $colors(-selectbg) \
-        -selectforeground $colors(-selectfg) \
-        -selectborderwidth 0 \
-        -font TkDefaultFont \
-        ;
+        ttk::style layout TSpinbox {
+            Spinbox.field -side top -sticky we -children {
+                Spinbox.buttons -side right -children {
+                    null -side right -sticky {} -children {
+                        Spinbox.uparrow -side top -sticky nse -children {
+                            Spinbox.symuparrow -side right -sticky e
+                        }
+                        Spinbox.downarrow -side bottom -sticky nse -children {
+                            Spinbox.symdownarrow -side right -sticky e
+                        }
+                    }
+                }
+                Spinbox.padding -sticky nswe -children {
+                    Spinbox.textarea -sticky nswe
+                }
+            }
+        }
 
-    $styleCmd map "." \
-        -background [list disabled $colors(-frame) \
-        active $colors(-lighter)] \
-        -foreground [list disabled $colors(-disabledfg)] \
-        -selectbackground [list  !focus $colors(-darkest)] \
-        -selectforeground [list  !focus white] \
-        ;
+        # Style elements
+        
+        # Text 
+        ttk::style configure Text -background $colors(-bg)
 
-    # ttk widgets.
-    $styleCmd configure TButton \
-        -width -8 -padding {5 1} -relief raised
-    $styleCmd configure TMenubutton \
-        -width -11 -padding {5 1} -relief raised
-    $styleCmd configure TCheckbutton \
-        -indicatorbackground "#ffffff" -indicatormargin {1 1 4 1}
-    $styleCmd configure TRadiobutton \
-        -indicatorbackground "#ffffff" -indicatormargin {1 1 4 1}
+        # Dialog
+        ttk::style configure Diaolog -background $colors(-bg)
 
-    $styleCmd configure TEntry \
-        -fieldbackground white -foreground light \
-        -padding {2 0}
-    $styleCmd configure TCombobox \
-        -fieldbackground white -foreground light \
-        -padding {2 0}
+        # Labels
+        ttk::style configure Label -background $colors(-lighter)
 
-    $styleCmd configure TNotebook.Tab \
-        -padding {6 2 6 2}
+        # extendedTk
+        ttk::style configure FadingLabel    -background $colors(-lighter) \
+                                            -foreground $colors(-fg) \
+                                            -anchor w
 
-    $styleCmd map TNotebook.Tab -background [list \
-        selected $colors(-lighter)]
+        # Capricorn
+        ttk::style configure Statusbar -background $colors(-blue)
+        ttk::style configure Statusbar.Child -background $colors(-blue)
 
-    # tk widgets.
-    $styleCmd map Menu \
-        -background [list active $colors(-lighter)] \
-        -foreground [list disabled $colors(-disabledfg)]
+        # Settings
+        ttk::style configure TButton -padding {8 4 8 4} -width -10 -anchor center -background $colors(-lighter)
+        ttk::style configure TMenubutton -padding {8 4 4 4}
+        ttk::style configure Toolbutton -anchor center
+        ttk::style configure TCheckbutton -padding 3
+        # Radiobutton and Checkbutton hover highlighting: disabled by default
+        # ttk::style map TRadiobutton -background [list active $colors(-checklight)]
+        # ttk::style map TCheckbutton -background [list active $colors(-checklight)]
+        ttk::style configure TRadiobutton -padding 3
+        ttk::style configure TSeparator -background $colors(-bg)
 
-    $styleCmd configure TreeCtrl \
-        -background gray30 -itembackground {gray60 gray50} \
-        -itemfill white -itemaccentfill yellow
+        # Notebook
+        ttk::style configure TNotebook -tabmargins {0 2 0 0} -borderwidth 0
+        ttk::style configure TNotebook.Tab -padding {6 2 6 2} -expand {0 0 2} -bordercolor $colors(-lightest)
+        ttk::style map TNotebook.Tab \
+            -expand     [list selected {1 2 4 2}] \
+            -background [list !selected $colors(-lighter)] 
 
-    $styleCmd map Treeview \
-        -background [list selected $colors(-selectbg)] \
-        -foreground [list selected $colors(-selectfg)]
-
-    $styleCmd configure Treeview -fieldbackground $colors(-lighter)
-  }
+        # Treeview
+        ttk::style configure Treeview -background $colors(-window)
+        ttk::style configure Treeview.Item -padding {2 0 0 0}
+        ttk::style map Treeview \
+            -background [list selected $colors(-selectbg)] \
+            -foreground [list selected $colors(-selectfg)]
+    }
 }
 
-# A few tricks for Tablelist.
+variable version 0.1
+package provide ttk::theme::light $version
 
-namespace eval ::tablelist:: {
-
-  proc lightTheme {} {
-    variable themeDefaults
-
-    array set colors [array get ttk::theme::light::colors]
-
-    array set themeDefaults [list \
-      -background	  "White" \
-      -foreground	  "Black" \
-      -disabledforeground $colors(-disabledfg) \
-      -stripebackground	  "#191919" \
-      -selectbackground	  "#4a6984" \
-      -selectforeground	  "DarkRed" \
-      -selectborderwidth 0 \
-      -font		TkTextFont \
-      -labelbackground	$colors(-frame) \
-      -labeldisabledBg	"#dcdad5" \
-      -labelactiveBg	"#eeebe7" \
-      -labelpressedBg	"#eeebe7" \
-      -labelforeground	Black \
-      -labeldisabledFg	"#999999" \
-      -labelactiveFg	Black \
-      -labelpressedFg	Black \
-      -labelfont	TkDefaultFont \
-      -labelborderwidth	2 \
-      -labelpady	1 \
-      -arrowcolor	"" \
-      -arrowstyle	sunken10x9 \
-      ]
-  }
-}
-
-package provide ttk::theme::light $::ttk::theme::light::version

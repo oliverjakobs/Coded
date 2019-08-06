@@ -3,16 +3,7 @@ import tkinter as tk
 
 from tkinter import ttk
 from extendedText import ExtendedText
-
-def style_configure(widget, name):
-    kw = {}
-    for key in widget.keys():
-        value = ttk.Style().lookup(name, key)
-        if value:
-            kw[key] = value
-
-    widget.configure(**kw)
-
+from extendedStyle import style_configure
 
 class AutoScrollbar(ttk.Scrollbar):
     """ Scrollbar that is only visible when needed """
@@ -38,6 +29,8 @@ class FadingLabel(ttk.Label):
         self._delay = kw.pop("delay", 2500)
         ttk.Label.__init__(self, master=master, **kw)
         self._idle_text = self["text"]
+        
+        style_configure(self, "FadingLabel")
 
     def write(self, msg):
         self["text"] = msg

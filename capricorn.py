@@ -13,7 +13,7 @@ from extendedTk import FadingLabel
 from toolbar import Toolbar
 from statusbar import Statusbar
 from workspace import Workspace
-from style import JSONStyle
+from extendedStyle import JSONStyle
 
 class Capricorn(tk.Tk):
     def __init__(self):     
