@@ -1,3 +1,0 @@
-[submodule "Frost/packages/glfw"]
-	path = Frost/packages/glfw
-	url = https://github.com/oliverjakobs/glfw

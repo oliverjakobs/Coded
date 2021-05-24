@@ -1,7 +1,3 @@
 #Directories
-.vs/
-bin/
-bin-int/
-
-#files
-*.user
+.vscode/
+__pycache__/
