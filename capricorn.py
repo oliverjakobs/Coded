@@ -4,13 +4,9 @@ import sys
 # import tkinter
 import tkinter as tk
 
-from tkinter import ttk
 from tkinter import filedialog
-from tkinter import messagebox
 
 # import own stuff
-from extendedTk import FadingLabel
-from toolbar import Toolbar
 from statusbar import Statusbar
 from workspace import Workspace
 from extendedStyle import JSONStyle
@@ -44,10 +40,6 @@ class Capricorn(tk.Tk):
         
         # menubar
         self.load_menu()
-
-        # toolbar
-        self.toolbar = Toolbar(self)
-        self.toolbar.grid(row=0, column=0, sticky=tk.EW)
 
         # get the size of the workspace
         self.update()

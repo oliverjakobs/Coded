@@ -70,6 +70,3 @@ class Workspace(ttk.PanedWindow):
         except Exception as e:
             messagebox.showerror("Error", "Could not save {0}: \n{1}".format(filename, e))
         return -1, filename
-
-
-        
