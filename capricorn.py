@@ -12,7 +12,7 @@ from workspace import Workspace
 from extendedStyle import JSONStyle
 
 class Capricorn(tk.Tk):
-    def __init__(self):     
+    def __init__(self):
         tk.Tk.__init__(self)
         # setup
         self.title("Capricorn")
@@ -150,18 +150,3 @@ class Capricorn(tk.Tk):
 if __name__ == "__main__":
     app = Capricorn()
     app.mainloop()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

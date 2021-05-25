@@ -29,7 +29,7 @@ class ExtendedStyle(ttk.Style):
         # Initialize as ttk.Style
         ttk.Style.__init__(self, *args, **kwargs)
 
-        # Initialize as ThemedObject        
+        # Initialize as ThemedObject
         self._load_themes()
 
         # Set the initial theme
