@@ -64,7 +64,7 @@ if __name__ == "__main__":
     root.title("Highlight")
     root.geometry("{0}x{1}".format(width, height))
 
-    filename = "fibonacci.py"
+    filename = "highlight.py"
 
     text = tk.Text(root, width=width, height=height)
     text.pack(fill = tk.BOTH)

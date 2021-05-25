@@ -1,12 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter import font as tkfont
 from tkinter import TclError
 
 from highlight import Highlighter
 
 import traceback
-import time
 
 def index_to_line(index):
     """ convert a tkinter index to the matching line number """
