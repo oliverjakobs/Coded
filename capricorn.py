@@ -113,13 +113,13 @@ class Capricorn(tk.Tk):
 
 
     def new_file(self, *args):
-         self.workspace.load_tab("Untitled", True)
+         self.workspace.load_tab(None)
 
     def open_file(self, *args):
         filename = filedialog.askopenfilename(**self._filedialog_options)
 
         if filename:
-            result, filename = self.workspace.load_tab(os.path.relpath(filename))
+            result = self.workspace.load_tab(filename)
             if result > 0:
                 self.statusbar.write("{0} already open".format(filename))
             elif result < 0:

@@ -1,3 +1,4 @@
+from extendedText import ExtendedText
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -9,6 +10,13 @@ from highlight import Highlighter
 
 import os
 
+class TabData:
+    def __init__(self, index, path, text):
+        self.index = index
+        self.path = path
+        self.text = text
+        pass
+
 class Workspace(ttk.PanedWindow):
     def __init__(self, master, location, width, height, style=None, prop=0.86, **kw):
         ttk.PanedWindow.__init__(self, master, width=width, height=height, **kw)
@@ -19,13 +27,8 @@ class Workspace(ttk.PanedWindow):
         self.style = style
 
         # content
-        editor_width = int(width * prop)
-
-        # editor notebook
-        self.notebook = ttk.Notebook(self, width=editor_width)
-        self._tab_texts = []
-        self._tab_names = []
-        self._new_tabs = []
+        self.notebook = ttk.Notebook(self, width=int(width * prop))
+        self.tabs = {}
 
         self.fileview = Fileview(self, style=style, location=location, title="Explorer")
 
@@ -44,82 +47,80 @@ class Workspace(ttk.PanedWindow):
             self.load_tab(filename)
     
     def on_tab_changed(self, event):
-        #print(self.notebook.get_index())
+        # print(self.notebook.index("current"))
         pass
 
-    def add_tab(self, name, new=False, **tab_options):
-        if name in self._tab_names:
-            return None
+    def set_current_name(self, name):
+        self.notebook.tab("current", text=name)
+
+    def get_current_name(self):
+        return self.notebook.tab("current", option="text")
+
+    def change_tab_path(self, name, new_path):
+        if not new_path:
+            return self.tabs[name]
+
+        new_name = os.path.relpath(new_path)
+        if new_name == name:
+            return self.tabs[name]
+
+        tab = self.tabs.pop(name, None)
+        if tab:
+            tab.path = new_path
+
+            self.tabs[new_name] = tab
+            self.set_current_name(new_name)
+
+        return tab
+
+    def delete_tab(self, name=None):
+        if name and name in self.tabs:
+            data = self.tabs.pop(name)
+            self.notebook.forget(data.index)
+        else:
+            self.tabs.pop(self.get_current_name())
+            self.notebook.forget("current")
+
+    def load_tab(self, path):
+        name = os.path.relpath(path) if path else "untitled"
         
-        tab = NumberedFrame(self, style=self.style, **tab_options)
+        if name in self.tabs:   # tab with this name is already open
+            self.notebook.select(self.tabs[name].index)
+            return 1
+
+        tab = NumberedFrame(self, style=self.style, wrap=tk.NONE, bd=0, padx=5, pady=5)
         self.notebook.add(tab, text=name)
         self.notebook.select(tab)
 
         tab.text.highlighter = Highlighter(tab.text, self.style)
 
-        # add to list
-        self._tab_texts.append(tab.text)
-        self._tab_names.append(name)
-        if new:
-            self._new_tabs.append(name)
+        # add to tab dict
+        self.tabs[name] = TabData(self.notebook.index(tab), path, tab.text)
 
-        return tab.text
-
-    def delete_tab(self, name=None):
-        if name and name in self._tab_names:
-            index = self._tab_names.index(name)
-            self._tab_names.pop(index)
-            self._tab_texts.pop(index)
-            self.notebook.forget(index)
-        else:
-            self._tab_texts.pop(self.notebook.index("current"))
-            self._tab_names.pop(self.notebook.index("current"))
-            self.notebook.forget("current")
-
-    def get_text(self):
-        return self._tab_texts[self.notebook.index("current")]
-
-    def set_name(self, name):
-        if self._tab_names[self.notebook.index("current")] != name:
-            self._tab_names[self.notebook.index("current")] = name
-            self.notebook.tab("current", text=name)
-
-    def get_name(self):
-        return self.notebook.tab("current", option="text")
-
-    def get_index(self):
-        return self.index("current")
-
-    def get_new(self, name):
-        return name in self._new_tabs
-
-    def load_tab(self, filename, new_tab=False):
-        text = self.add_tab(filename, new_tab, wrap=tk.NONE, bd=0, padx=5, pady=5)
-        if new_tab: # new tab no text to insert
-            return 0, filename
-        if not text: # tab with this name is already open
-            return 1, filename
+        if not path: # new tab no text to insert
+            return 0
 
         try:
-            text.read(filename)
-            return 0, filename
+            tab.text.read(path)
+            return 0
         except UnicodeDecodeError as e:
-            messagebox.showerror("UnicodeDecodeError", "Could not open {0}: \n{1}".format(filename, e))
+            messagebox.showerror("UnicodeDecodeError", "Could not open {0}: \n{1}".format(path, e))
             self.delete_tab()
         except FileNotFoundError as e:
-            messagebox.showerror("FileNotFoundError", "Could not open {0}: \n{1}".format(filename, e))
-            self.delete_tab(filename)
-        return -1, filename  
+            messagebox.showerror("FileNotFoundError", "Could not open {0}: \n{1}".format(path, e))
+            self.delete_tab()
+        return -1
 
-    def save_tab(self, filename=None):
+    def save_tab(self, path=None):
+        tab = self.tabs[self.get_current_name()]
         try:
-            if not filename:
-                filename = self.get_name()
-                if self.get_new(filename):
-                    return 1, filename
-            self.get_text().write(filename)
-            self.set_name(filename)
-            return 0, filename
+            if path or tab.path:
+                tab = self.change_tab_path(self.get_current_name(), path)
+                tab.text.write(tab.path)
+                return 0, tab.path
+                
+            # current tab does not have a path yet and no path was specified
+            return 1, None
         except Exception as e:
-            messagebox.showerror("Error", "Could not save {0}: \n{1}".format(filename, e))
-        return -1, filename
+            messagebox.showerror("Error", "Could not save {0}: \n{1}".format(tab.path, e))
+        return -1, tab.path

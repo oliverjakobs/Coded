@@ -218,3 +218,4 @@ class Tooltip():
             self.window.destroy()
             self.window = None
 
+
