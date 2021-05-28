@@ -117,20 +117,9 @@ namespace eval ttk::theme::dark {
         # Text 
         ttk::style configure Text -background $colors(-bg)
 
-        # Dialog
-        ttk::style configure Diaolog -background $colors(-bg)
-
-        # Labels
-        ttk::style configure Label -background $colors(-darker)
-
-        # extendedTk
-        ttk::style configure FadingLabel    -background $colors(-darker) \
-                                            -foreground $colors(-fg) \
-                                            -anchor w
-
-        # Capricorn
-        ttk::style configure Statusbar -background $colors(-blue)
-        ttk::style configure Statusbar.Child -background $colors(-blue)
+        # Statusbar
+        ttk::style configure TFrame -background $colors(-blue)
+        ttk::style configure TLabel -background $colors(-blue)
 
         # Settings
         ttk::style configure TButton -padding {8 4 8 4} -width -10 -anchor center -background $colors(-darker)

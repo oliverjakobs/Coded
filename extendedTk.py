@@ -3,14 +3,11 @@ import tkinter as tk
 
 from tkinter import ttk
 from extendedText import ExtendedText
-from extendedStyle import style_configure
 
 class AutoScrollbar(ttk.Scrollbar):
     """ Scrollbar that is only visible when needed """
     def __init__(self, master=None, **kw):
         ttk.Scrollbar.__init__(self, master=master, **kw)
-
-        style_configure(self, "AutoScrollbar")
 
     def set(self, first, last):
         first, last = float(first), float(last)
@@ -22,15 +19,13 @@ class AutoScrollbar(ttk.Scrollbar):
 
 class FadingLabel(ttk.Label):
     """ Label that fades back to an idle text after a given time """
-    def __init__(self, master=None, **kw):
+    def __init__(self, master=None, delay=2500, **kw):
         """
         :param delay: delay after which the text return to idle
         """
-        self._delay = kw.pop("delay", 2500)
         ttk.Label.__init__(self, master=master, **kw)
         self._idle_text = self["text"]
-        
-        style_configure(self, "FadingLabel")
+        self._delay = delay
 
     def write(self, msg):
         self["text"] = msg
@@ -103,24 +98,20 @@ class NumberedFrame(ttk.Frame):
         """
         :param style: 
         """
-        style = kw.pop("style", None)
         ttk.Frame.__init__(self, master=master)
-
-        options = kw
-
-        if style:
-            options["background"] = style.backgrounds["Primary"]
   
-        self.text = ExtendedText(self, **options)
+        self.text = ExtendedText(self, **kw)
         self.text.grid(row=0, column=1, sticky=tk.NSEW)
 
-        options["bd"] = 0 
-        options["width"] = 4 
-        options["takefocus"] = False
-        options["foreground"] = style.foregrounds["Secondary"]
-        options["font"] = self.text["font"]
+        kw.pop("style", None)
+        kw["bd"] = 0 
+        kw["width"] = 4 
+        kw["takefocus"] = False
+        kw["fg"] = self.text["fg"]
+        kw["bg"] = self.text["bg"]
+        kw["font"] = self.text["font"]
         
-        self._line_numbers = tk.Text(self, **options)
+        self._line_numbers = tk.Text(self, **kw)
         self._line_numbers.bind("<MouseWheel>", lambda e: "break")
         self._set_line_numbers(1)
         
@@ -217,5 +208,6 @@ class Tooltip():
         if self.window:
             self.window.destroy()
             self.window = None
+
 
 

@@ -47,12 +47,14 @@ class ExtendedText(tk.Text):
         self.tabwidth = kw.pop("tabwidth", 8)
         self.indentwidth = kw.pop("indentwidth", 4)
         self.usetabs = kw.pop("usetabs", False) 
+        self.style = kw.pop("style", ttk.Style())
 
         tk.Text.__init__(self, master=master, **kw)
 
-        # style
-        self.configure(bg=ttk.Style().lookup("Text", "background"))
-        
+        # apply style
+        self.configure(bg=self.style.lookup("Text", "background"))
+        self.configure(fg=self.style.lookup("Text", "foreground"))
+
         self._w_orig = self._w + "_orig"
         self.tk.call("rename", self._w, self._w_orig)
         self.tk.createcommand(self._w, self._dispatch_tk_operation)

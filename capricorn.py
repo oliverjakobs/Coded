@@ -9,7 +9,7 @@ from tkinter import filedialog
 # import own stuff
 from statusbar import Statusbar
 from workspace import Workspace
-from extendedStyle import JSONStyle
+from extendedStyle import ExtendedStyle
 
 class Capricorn(tk.Tk):
     def __init__(self):
@@ -36,7 +36,7 @@ class Capricorn(tk.Tk):
         self.columnconfigure(0, weight=1)
         
         # style
-        self.style = JSONStyle(path="themes/style.json")
+        self.style = ExtendedStyle(dir="./themes", theme="dark")
         
         # menubar
         self.load_menu()
@@ -52,7 +52,7 @@ class Capricorn(tk.Tk):
         self.workspace.grid(row=1, column=0, sticky=tk.NSEW)
 
         # status bar
-        self.statusbar = Statusbar(self)
+        self.statusbar = Statusbar(self, style=self.style)
         self.statusbar.grid(row=2, column=0, sticky=tk.EW)
 
         # events

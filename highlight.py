@@ -1,21 +1,23 @@
 
+from extendedStyle import ExtendedStyle
 from pygments import lex
 from pygments.lexers import PythonLexer
 from pygments.lexers import TclLexer
 
+import json
 import tkinter as tk
-from extendedStyle import JSONStyle
 
 # TODO: dynamic lexer
 class Highlighter:
-    def __init__(self, text, style, lexer = PythonLexer()):
+    def __init__(self, text, style, tokens, lexer = PythonLexer()):
         self.text = text
         self._lexer = lexer
-        self._configure(style)
 
-    def _configure(self, style):
-        for t in style.tokens:
-            self.text.tag_configure("Token." + t, foreground=style.tokens[t])
+        with open(tokens) as style_sheet:
+            style = json.load(style_sheet)
+
+            for t in style["Token"]:
+                self.text.tag_configure("Token." + t, foreground=style["Token"][t])
 
     def clean(self, start, end):
         """ remove all token related tags from all characters between start and end """
@@ -68,7 +70,7 @@ if __name__ == "__main__":
 
     text = tk.Text(root, width=width, height=height)
     text.pack(fill = tk.BOTH)
-    highlighter = Highlighter(text, JSONStyle("style.json"))
+    highlighter = Highlighter(text, ExtendedStyle("dark"), "themes/token.json")
 
     with open(filename, "r") as f:
         text.insert(1.0, f.read())
@@ -80,3 +82,4 @@ if __name__ == "__main__":
     text.bind("<Control-s>", on_event)
 
     root.mainloop()
+
