@@ -46,7 +46,7 @@ class ExtendedText(tk.Text):
         self.highlighter = kw.pop("highlighter", None)
         self.tabwidth = kw.pop("tabwidth", 8)
         self.indentwidth = kw.pop("indentwidth", 4)
-        self.usetabs = kw.pop("usetabs", False) 
+        self.usetabs = kw.pop("usetabs", False)
         self.style = kw.pop("style", ttk.Style())
 
         tk.Text.__init__(self, master=master, **kw)

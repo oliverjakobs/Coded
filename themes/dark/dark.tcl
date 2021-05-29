@@ -5,7 +5,9 @@ namespace eval ttk::theme::dark {
     variable colors
     array set colors {
         -fg             "#dedede"
+        -fg2            "#969696"
         -bg             "#363636"
+        -bg2            "#626262"
         -disabledbg     "#2e2e2e"
         -disabledfg     "#999999"
         -selectbg       "#414141"
@@ -13,7 +15,7 @@ namespace eval ttk::theme::dark {
         -window         "#373737"
         -focuscolor     "#bebebe"
         -checklight     "#e6e6e6"
-        -dark	        "#222222"
+        -dark	        "#626262"
         -darker 	    "#121212"
         -darkest	    "#000000"
         -lighter	    "#626262"
@@ -60,17 +62,23 @@ namespace eval ttk::theme::dark {
             }
         }
 
+        # scrollbar
+        ttk::style layout Horizontal.TScrollbar {
+            Horizontal.Scrollbar.trough -sticky ew -children {
+                Horizontal.Scrollbar.thumb -expand true
+            }
+        }
+
         ttk::style layout Vertical.TScrollbar {
             Vertical.Scrollbar.trough -sticky ns -children {
                 Vertical.Scrollbar.thumb -expand true
             }
         }
 
-        ttk::style layout Horizontal.TScrollbar {
-            Horizontal.Scrollbar.trough -sticky ew -children {
-                Horizontal.Scrollbar.thumb -expand true
-            }
-        }
+        ttk::style configure TScrollbar \
+            -troughcolor $colors(-bg) -troughrelief flat \
+            -background $colors(-fg2) -relief flat
+
 
         ttk::style layout TMenubutton {
             Menubutton.button -children {
@@ -118,8 +126,8 @@ namespace eval ttk::theme::dark {
         ttk::style configure Text -background $colors(-bg)
 
         # Statusbar
-        ttk::style configure TFrame -background $colors(-blue)
-        ttk::style configure TLabel -background $colors(-blue)
+        ttk::style configure Statusbar.TFrame -background $colors(-blue)
+        ttk::style configure Statusbar.TLabel -background $colors(-blue)
 
         # Settings
         ttk::style configure TButton -padding {8 4 8 4} -width -10 -anchor center -background $colors(-darker)
@@ -137,7 +145,7 @@ namespace eval ttk::theme::dark {
         ttk::style configure TNotebook.Tab -padding {6 2 6 2} -expand {0 0 2} -bordercolor $colors(-darkest)
         ttk::style map TNotebook.Tab \
             -expand     [list selected {1 2 4 2}] \
-            -background [list !selected $colors(-lighter)] 
+            -background [list !selected $colors(-bg2)] 
 
         # Treeview
         ttk::style configure Treeview -background $colors(-window)

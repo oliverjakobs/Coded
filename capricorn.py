@@ -18,8 +18,7 @@ class Capricorn(tk.Tk):
         self.title("Capricorn")
         self.geometry("1200x800")
         
-        self.icon = tk.PhotoImage(file='capricorn.png')
-        self.iconphoto(False, self.icon)
+        self.iconbitmap('capricorn.ico')
 
         # config
         # self.state("zoomed")

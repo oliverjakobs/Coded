@@ -4,17 +4,14 @@ from tkinter import ttk
 from extendedTk import FadingLabel
 
 class Statusbar(ttk.Frame):
-    def __init__(self, master=None, style=None, **kw):
-        ttk.Frame.__init__(self, master, **kw)
+    def __init__(self, master=None, **kw):
+        kw.pop('style', None)
+        ttk.Frame.__init__(self, master, style='Statusbar.TFrame', **kw)
 
-        self.status = FadingLabel(self, text="Status")
+        self.status = FadingLabel(self, text="Status", style='Statusbar.TLabel')
 
         self.insert_pos = tk.StringVar(value="Ln: -| Col: -")
-        label = ttk.Label(self, textvariable=self.insert_pos)
-
-        
-        # apply style
-        # self.configure(bg=self.style.lookup("Statusbar", "background"))
+        label = ttk.Label(self, textvariable=self.insert_pos, style='Statusbar.TLabel')
 
         # grid
         self.columnconfigure(1, weight=1)
@@ -26,5 +23,5 @@ class Statusbar(ttk.Frame):
         self.status.write(msg)
 
     def update_insert_label(self, event):
-        ln, col = event.widget.index("insert").split(".")
+        ln, col = event.widget.index('insert').split('.')
         self.insert_pos.set("Ln: {}| Col: {}".format(ln, col))
