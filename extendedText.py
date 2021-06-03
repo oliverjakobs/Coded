@@ -65,8 +65,8 @@ class ExtendedText(tk.Text):
         self._original_mark = self._register_tk_proxy_function("mark", self.intercept_mark)
 
         self.tk.call("tcl_wordBreakAfter", "a b", 0) # make sure word.tcl is loaded
-        self.tk.call("set", "tcl_wordchars",     "[a-zA-Z0-9_À-ÖØ-öø-ÿĀ-ſƀ-ɏА-я]")
-        self.tk.call("set", "tcl_nonwordchars", "[^a-zA-Z0-9_À-ÖØ-öø-ÿĀ-ſƀ-ɏА-я]")
+        self.tk.call("set", "tcl_wordchars",     "[a-zA-Z0-9_]")
+        self.tk.call("set", "tcl_nonwordchars", "[^a-zA-Z0-9_]")
 
         # events
         self.bind("<Control-z>", lambda e: self.edit_undo)

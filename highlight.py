@@ -4,20 +4,24 @@ from pygments import lex
 from pygments.lexers import PythonLexer
 from pygments.lexers import TclLexer
 
+from configparser import ConfigParser
+
 import json
 import tkinter as tk
 
 # TODO: dynamic lexer
 class Highlighter:
-    def __init__(self, text, style, tokens, lexer = PythonLexer()):
+    def __init__(self, text, config_file, lexer = PythonLexer()):
         self.text = text
         self._lexer = lexer
 
-        with open(tokens) as style_sheet:
-            style = json.load(style_sheet)
-
-            for t in style["Token"]:
-                self.text.tag_configure("Token." + t, foreground=style["Token"][t])
+        config = ConfigParser()
+        config.optionxform = str
+        config.read(config_file)
+        
+        token = config['Token']
+        for t in token:
+            self.text.tag_configure("Token.{}".format(t), foreground=token[t])
 
     def clean(self, start, end):
         """ remove all token related tags from all characters between start and end """

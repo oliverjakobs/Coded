@@ -92,7 +92,7 @@ class Workspace(ttk.PanedWindow):
         self.notebook.add(tab, text=name)
         self.notebook.select(tab)
 
-        tab.text.highlighter = Highlighter(tab.text, self.style, "themes/token.json")
+        tab.text.highlighter = Highlighter(tab.text, "config.ini")
 
         # add to tab dict
         self.tabs[name] = TabData(self.notebook.index(tab), path, tab.text)
