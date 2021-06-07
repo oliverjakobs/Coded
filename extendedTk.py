@@ -92,9 +92,9 @@ class Fileview(ttk.Frame):
 ######################################################################
 
 ######################################################################
-class NumberedFrame(ttk.Frame):
+class NumberedTextFrame(ttk.Frame):
     """ Decorates text with scrollbars and line numbers """
-    def __init__(self, master=None, **kw):
+    def __init__(self, text, master=None, **kw):
         """
         :param style: 
         """
@@ -175,39 +175,52 @@ class NumberedFrame(ttk.Frame):
 
 ######################################################################
 
-
 ######################################################################
-# TODO: fix tooltip overshooting
-class Tooltip():
-    def __init__(self, widget):
-        self.widget = widget
-        self.window = None
-    
-    def show(self, text):
-        if self.window or not text:
-            return
-        # get postion
-        x, y, cx, cy = self.widget.bbox("insert")
-        x = x + self.widget.winfo_rootx() + 0
-        y = y + cy + self.widget.winfo_rooty() + 40
+# TODO: adjust themes
+class ExtendedStyle(ttk.Style):
+    """
+    Style that loads themes from tcl files. Can be
+    used as a drop-in replacement for normal ttk.Style instances.
+    """
+    def __init__(self, dir, theme=None, *args, **kwargs):
+        """
+        :param theme: Theme to set up initialization completion. If the
+                      theme is not available, fails silently.
+        """
+ 
+        # Initialize as ttk.Style
+        ttk.Style.__init__(self, *args, **kwargs)
 
-        self.window = tk.Toplevel(self.widget)
-        self.window.wm_overrideredirect(True)
-        self.window.wm_geometry("+%d+%d" % (x, y))
-        
-        # load actual tooltip
-        label = tk.Label(self.window, text=text)
-        label["justify"] = tk.LEFT
-        label["background"] = "#e6e6e6"
-        label["foreground"] = "#424242"
-        label["relief"] = tk.SOLID
-        label["borderwidth"] = 1
-        label.pack(ipadx=1)
-     
-    def hide(self):
-        if self.window:
-            self.window.destroy()
-            self.window = None
+        # Append a theme dir to the Tk interpreter auto_path
+        self.tk.call("lappend", "auto_path", "[{}]".format(dir))
+        # Load the themes into the Tkinter interpreter
+        self.tk.eval("source {}/themes.tcl".format(dir))
 
+        # Set the initial theme
+        if theme and theme in self.get_themes():
+            self.set_theme(theme)
 
+    def set_theme(self, theme_name):
+        """
+        Set new theme to use. Uses a direct tk call to allow usage
+        of the themes supplied with this package.
 
+        :param theme_name: name of theme to activate
+        """
+        self.tk.call("package", "require", "ttk::theme::{}".format(theme_name))
+        self.tk.call("ttk::setTheme", theme_name)
+
+    def get_themes(self):
+        """Return a list of names of available themes"""
+        return list(set(self.tk.call("ttk::themes")))
+
+    def theme_use(self, theme_name=None):
+        """
+        Set a new theme to use or return current theme name
+
+        :param theme_name: name of theme to use
+        :returns: active theme name
+        """
+        if theme_name:
+            self.set_theme(theme_name)
+        return ttk.Style.theme_use(self)

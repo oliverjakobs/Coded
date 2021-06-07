@@ -1,10 +1,9 @@
-from extendedText import ExtendedText
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 
 from extendedTk import Fileview
-from extendedTk import NumberedFrame
+from extendedTk import NumberedTextFrame
 
 from highlight import Highlighter
 
@@ -88,7 +87,7 @@ class Workspace(ttk.PanedWindow):
             self.notebook.select(self.tabs[name].index)
             return 1
 
-        tab = NumberedFrame(self, style=self.style, wrap=tk.NONE, bd=0, padx=5, pady=5)
+        tab = NumberedTextFrame(self, style=self.style, wrap=tk.NONE, bd=0, padx=5, pady=5)
         self.notebook.add(tab, text=name)
         self.notebook.select(tab)
 

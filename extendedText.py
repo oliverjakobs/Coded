@@ -292,12 +292,12 @@ class ExtendedText(tk.Text):
         return "break"
 
 if __name__ == "__main__":
-    from extendedStyle import JSONStyle
+    from extendedTk import ExtendedStyle
 
     root = tk.Tk()
     root.geometry("600x400")
 
-    style = JSONStyle(path="themes/style.json")
+    style = ExtendedStyle(dir="./themes", theme="dark")
 
     text = ExtendedText(root)
     text.highlighter = Highlighter(text, style)

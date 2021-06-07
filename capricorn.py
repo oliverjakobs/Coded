@@ -9,7 +9,7 @@ from tkinter import filedialog
 # import own stuff
 from statusbar import Statusbar
 from workspace import Workspace
-from extendedStyle import ExtendedStyle
+from extendedTk import ExtendedStyle
 
 class Capricorn(tk.Tk):
     def __init__(self):

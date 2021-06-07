@@ -1,12 +1,10 @@
 
-from extendedStyle import ExtendedStyle
 from pygments import lex
 from pygments.lexers import PythonLexer
 from pygments.lexers import TclLexer
 
 from configparser import ConfigParser
 
-import json
 import tkinter as tk
 
 # TODO: dynamic lexer
@@ -62,6 +60,7 @@ class Highlighter:
 
 
 if __name__ == "__main__":
+    from extendedTk import ExtendedStyle
     root = tk.Tk()
 
     width = 800
