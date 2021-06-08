@@ -17,23 +17,21 @@ class TabData:
         pass
 
 class Workspace(ttk.PanedWindow):
-    def __init__(self, master, location, width, height, style=None, prop=0.86, **kw):
-        ttk.PanedWindow.__init__(self, master, width=width, height=height, **kw)
+    def __init__(self, master, location, style=None, **kw):
+        super().__init__(master, **kw)
 
         self.location = location
-        self.width = width
-        self.height = height
         self.style = style
 
         # content
-        self.notebook = ttk.Notebook(self, width=int(width * prop))
+        self.notebook = ttk.Notebook(self)
         self.tabs = {}
 
         self.fileview = Fileview(self, style=style, location=location, title="Explorer")
 
         # adding content to the workspace
-        self.add(self.notebook)
         self.add(self.fileview)
+        self.add(self.notebook)
 
         # events
         # TODO: <Configure> event

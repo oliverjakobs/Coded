@@ -7,5 +7,5 @@ array set base_themes {
 }
 
 foreach {theme version} [array get base_themes] {
-  package ifneeded ttk::theme::$theme $version [list source [file join $base_theme_dir $theme $theme.tcl]]
+  package ifneeded ttk::theme::$theme $version [list source [file join $base_theme_dir $theme.tcl]]
 }

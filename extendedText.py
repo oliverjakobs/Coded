@@ -49,7 +49,7 @@ class ExtendedText(tk.Text):
         self.usetabs = kw.pop("usetabs", False)
         self.style = kw.pop("style", ttk.Style())
 
-        tk.Text.__init__(self, master=master, **kw)
+        super().__init__(master=master, **kw)
 
         # apply style
         self.configure(bg=self.style.lookup("Text", "background"))

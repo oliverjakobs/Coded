@@ -7,7 +7,7 @@ from extendedText import ExtendedText
 class AutoScrollbar(ttk.Scrollbar):
     """ Scrollbar that is only visible when needed """
     def __init__(self, master=None, **kw):
-        ttk.Scrollbar.__init__(self, master=master, **kw)
+        super().__init__(master=master, **kw)
 
     def set(self, first, last):
         first, last = float(first), float(last)
@@ -23,7 +23,7 @@ class FadingLabel(ttk.Label):
         """
         :param delay: delay after which the text return to idle
         """
-        ttk.Label.__init__(self, master=master, **kw)
+        super().__init__(master=master, **kw)
         self._idle_text = self["text"]
         self._delay = delay
 
@@ -38,7 +38,7 @@ class FadingLabel(ttk.Label):
 class Fileview(ttk.Frame):
     def __init__(self, master, location, **kw):
         title = kw.pop("title", "")
-        ttk.Frame.__init__(self, master=master)
+        super().__init__(master=master)
         
         # Setup tree and its scrollbars
         scrollY = AutoScrollbar(self, orient=tk.VERTICAL)
@@ -67,12 +67,17 @@ class Fileview(ttk.Frame):
         self.grid_columnconfigure(0, weight=1)
 
     def process_directory(self, parent, path):
-        for p in os.listdir(path):
+        dir_insert = 0
+
+        for p in sorted(os.listdir(path), key=str.casefold):
             abspath = os.path.join(path, p)
-            isdir = os.path.isdir(abspath)
-            oid = self.tree.insert(parent, tk.END, text=p, open=False)
-            if isdir:
+            if os.path.isdir(abspath):
+                oid = self.tree.insert(parent, dir_insert, text=p, open=False)
+                dir_insert += 1
                 self.process_directory(oid, abspath)
+            else:
+                self.tree.insert(parent, tk.END, text=p)
+
 
     def focus_name(self):
         return self.tree.item(self.tree.focus())["text"]
@@ -98,7 +103,7 @@ class NumberedTextFrame(ttk.Frame):
         """
         :param style: 
         """
-        ttk.Frame.__init__(self, master=master)
+        super().__init__(master=master)
   
         self.text = ExtendedText(self, **kw)
         self.text.grid(row=0, column=1, sticky=tk.NSEW)
@@ -187,9 +192,7 @@ class ExtendedStyle(ttk.Style):
         :param theme: Theme to set up initialization completion. If the
                       theme is not available, fails silently.
         """
- 
-        # Initialize as ttk.Style
-        ttk.Style.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Append a theme dir to the Tk interpreter auto_path
         self.tk.call("lappend", "auto_path", "[{}]".format(dir))

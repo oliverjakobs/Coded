@@ -91,8 +91,6 @@ class LeftPanel(ttk.Frame):
         self.dir = os.getcwd().replace('\\', '/') + "/crossviper-master/"
         
         print('directory: ' + self.dir)
-        leftButtonFrame = ttk.Frame(self, height=25)
-        leftButtonFrame.pack(side=tk.TOP, fill=tk.X)
 
         # TreeView
         from os.path import expanduser
@@ -125,37 +123,6 @@ class LeftPanel(ttk.Frame):
 
         self.tree.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
         
-        # Buttons
-        infoIcon = tk.PhotoImage(file=self.dir + 'images/info-file.png')
-        infoButton = ttk.Button(leftButtonFrame, image=infoIcon, command=self.infoFile)
-        infoButton.image = infoIcon
-        infoButton.pack(side=tk.LEFT)
-        self.createToolTip(infoButton, 'Show Information')
-
-        newFolderIcon = tk.PhotoImage(file=self.dir + 'images/new-folder.png')
-        newFolderButton = ttk.Button(leftButtonFrame, image=newFolderIcon, command=self.newFolder)
-        newFolderButton.image = newFolderIcon
-        newFolderButton.pack(side=tk.LEFT)
-        self.createToolTip(newFolderButton, 'Create New Folder')
-
-        copyFileIcon = tk.PhotoImage(file=self.dir + 'images/copy-file.png')
-        copyFileButton = ttk.Button(leftButtonFrame, image=copyFileIcon, command=self.copyFile)
-        copyFileButton.image = copyFileIcon
-        copyFileButton.pack(side=tk.LEFT)
-        self.createToolTip(copyFileButton, 'Copy Item')
-
-        pasteFileIcon = tk.PhotoImage(file=self.dir + 'images/paste-file.png')
-        pasteFileButton = ttk.Button(leftButtonFrame, image=pasteFileIcon, command=self.pasteFile)
-        pasteFileButton.image = pasteFileIcon
-        pasteFileButton.pack(side=tk.LEFT)
-        self.createToolTip(pasteFileButton, 'Paste Item')
-
-        deleteFileIcon = tk.PhotoImage(file=self.dir + 'images/delete-file.png')
-        deleteFileButton = ttk.Button(leftButtonFrame, image=deleteFileIcon, command=self.deleteFile)
-        deleteFileButton.image = deleteFileIcon
-        deleteFileButton.pack(side=tk.LEFT)
-        self.createToolTip(deleteFileButton, 'Delete Item')
-
         self.selected = []
         self.sourceItem = None
         self.destinationItem = None
@@ -173,7 +140,6 @@ class LeftPanel(ttk.Frame):
         widget.bind('<Enter>', enter)
         widget.bind('<Leave>', leave)
         
-    
     def process_directory(self, parent, path):
         try:
             l = []
@@ -337,7 +303,6 @@ class LeftPanel(ttk.Frame):
         else:
             return
         
-
     def refreshTree(self):
         for i in self.tree.get_children():
             self.tree.delete(i)
@@ -464,7 +429,6 @@ class LeftPanel(ttk.Frame):
         self.selected = None
         self.sourceItem = None
             
-        
     def deleteFile(self):
         rootDir = self.checkPath(os.getcwd())
         directory = None
@@ -518,8 +482,6 @@ class LeftPanel(ttk.Frame):
                 
                 except Exception as e:
                     MessageDialog(self, 'Error', '\n' + str(e) + '\n')
-
-        
     
     def treePopUp(self, event):
         item = self.tree.identify('item',event.x,event.y)
@@ -618,8 +580,6 @@ class LeftPanel(ttk.Frame):
     def treeGenerateRefresh(self):
         self.refreshTree()
     
-
-    
     def treeZipFolder(self):
         #dialog = simpledialog.askstring('Make Zip-File from current directory', 'current directory\n' + os.getcwd() + 
         #                                '\n\nEnter filename: ')
@@ -669,11 +629,7 @@ class RightPanel(tk.Frame):
         # for item in pathList:
         #     self.dir += item + '/'
         # print(self.dir)
-        
 
-        rightButtonFrame = ttk.Frame(self, height=25)
-        rightButtonFrame.pack(side=tk.TOP, fill=tk.X)
-        
         self.rightBottomFrame = ttk.Frame(self, height=25)
         self.rightBottomFrame.pack(side=tk.BOTTOM, fill=tk.X)
         
@@ -714,94 +670,6 @@ class RightPanel(tk.Frame):
         
         self.TEXTPADS[0] = self.textPad
         self.LINENUMBERS[0] = self.linenumber
-        
-        # Buttons
-        newIcon = tk.PhotoImage(file=self.dir + 'images/new.png')
-        newButton = ttk.Button(rightButtonFrame, image=newIcon, command=self.new)
-        newButton.image = newIcon
-        newButton.pack(side=tk.LEFT)
-        self.createToolTip(newButton, 'Create New File')
-
-        openIcon = tk.PhotoImage(file=self.dir + 'images/open.png')
-        openButton = ttk.Button(rightButtonFrame, image=openIcon, command=self.open)
-        openButton.image = openIcon
-        openButton.pack(side=tk.LEFT)
-        self.createToolTip(openButton, 'Open File')
-
-        
-        saveIcon = tk.PhotoImage(file=self.dir + 'images/save.png')
-        saveButton = ttk.Button(rightButtonFrame, image=saveIcon, command=self.save)
-        saveButton.image = saveIcon
-        saveButton.pack(side=tk.LEFT)
-        self.createToolTip(saveButton, 'Save File')
-
-        printIcon = tk.PhotoImage(file=self.dir + 'images/print.png')
-        printButton = ttk.Button(rightButtonFrame, image=printIcon, command=self.print)
-        printButton.image = printIcon
-        printButton.pack(side=tk.LEFT)
-        self.createToolTip(printButton, 'Print File')
-
-        
-        undoIcon = tk.PhotoImage(file=self.dir + 'images/undo.png')
-        self.undoButton = ttk.Button(rightButtonFrame, image=undoIcon, command=self.undo)
-        self.undoButton.image = undoIcon
-        self.undoButton.pack(side=tk.LEFT)
-        self.createToolTip(self.undoButton, 'Undo')
-
-        redoIcon = tk.PhotoImage(file=self.dir + 'images/redo.png')
-        self.redoButton = ttk.Button(rightButtonFrame, image=redoIcon, command=self.redo)
-        self.redoButton.image = redoIcon
-        self.redoButton.pack(side=tk.LEFT)
-        self.createToolTip(self.redoButton, 'Redo')
-
-        zoomInIcon = tk.PhotoImage(file=self.dir + 'images/zoomIn.png')
-        zoomInButton = ttk.Button(rightButtonFrame, image=zoomInIcon, command=self.zoomIn)
-        zoomInButton.image = zoomInIcon
-        zoomInButton.pack(side=tk.LEFT)
-        self.createToolTip(zoomInButton, 'Zoom In')
-
-        zoomOutIcon = tk.PhotoImage(file=self.dir + 'images/zoomOut.png')
-        zoomOutButton = ttk.Button(rightButtonFrame, image=zoomOutIcon, command=self.zoomOut)
-        zoomOutButton.image = zoomOutIcon
-        zoomOutButton.pack(side=tk.LEFT)
-        self.createToolTip(zoomOutButton, 'Zoom Out')
-
-        settingsIcon = tk.PhotoImage(file=self.dir + 'images/settings.png')
-        settingsButton = ttk.Button(rightButtonFrame, image=settingsIcon, command=self.settings)
-        settingsButton.image = settingsIcon
-        settingsButton.pack(side=tk.LEFT)
-        self.createToolTip(settingsButton, 'Show Settings')
-
-        runIcon = tk.PhotoImage(file=self.dir + 'images/run.png')
-        runButton = ttk.Button(rightButtonFrame, image=runIcon, command=self.run)
-        runButton.image = runIcon
-        runButton.pack(side=tk.RIGHT)
-        runButton.bind('<Button-3>', self.popupRun)
-        self.createToolTip(runButton, 'Run File')
-        
-        terminalIcon = tk.PhotoImage(file=self.dir + 'images/terminal.png')
-        terminalButton = ttk.Button(rightButtonFrame, image=terminalIcon, command=self.terminal)
-        terminalButton.image = terminalIcon
-        terminalButton.pack(side=tk.RIGHT)
-        self.createToolTip(terminalButton, 'Open Terminal')
-
-        interpreterIcon = tk.PhotoImage(file=self.dir + 'images/interpreter.png')
-        interpreterButton = ttk.Button(rightButtonFrame, image=interpreterIcon, command=self.interpreter)
-        interpreterButton.image = interpreterIcon
-        interpreterButton.pack(side=tk.RIGHT)
-        self.createToolTip(interpreterButton, 'Open Python Interpreter')
-
-        viewIcon = tk.PhotoImage(file=self.dir + 'images/view.png')
-        viewButton = ttk.Button(self.rightBottomFrame, image=viewIcon, command=self.overview)
-        viewButton.image = viewIcon
-        viewButton.pack(side=tk.RIGHT)
-        self.createToolTip(viewButton, 'Class Overview')
-
-        searchIcon = tk.PhotoImage(file=self.dir + 'images/search.png')
-        searchButton = ttk.Button(self.rightBottomFrame, image=searchIcon, command=self.search)
-        searchButton.image = searchIcon
-        searchButton.pack(side=tk.RIGHT)
-        self.createToolTip(searchButton, 'Search')
 
         self.searchBox = tk.Entry(self.rightBottomFrame, bg='black', fg='white')
         self.searchBox.configure(cursor="xterm green")
@@ -817,7 +685,6 @@ class RightPanel(tk.Frame):
         self.autocompleteEntry = ttk.Label(self.rightBottomFrame, text='---', font=('Mono', 13))
         self.autocompleteEntry.pack(side='left', fill='y', padx=5)
         self.textPad.entry = self.autocompleteEntry
-
 
         # Shortcuts
         self.textPad = self.shortcutBinding(self.textPad)
@@ -1396,8 +1263,6 @@ class RightPanel(tk.Frame):
         except Exception as e:
             MessageDialog(self, 'Error', '\n' + str(e) + '\n')
         
-        
-    
     def redo(self, event=None):
         #x = self.textPad.edit_modified()
         index = self.textPad.index('insert linestart')
@@ -1493,14 +1358,10 @@ class RightPanel(tk.Frame):
             self.after(seconds, self.textPad.entry.config(text='---'))
             canvas.destroy()
             self.textPad.update()
-
-    
-
                 
     def overview(self, event=None):
         ViewDialog(self.textPad, "Class - Overview", self.textPad)
         
-    
     def interpreter(self):
         c = Configuration()     # -> in configuration.py
         system = c.getSystem()
@@ -1509,7 +1370,6 @@ class RightPanel(tk.Frame):
         thread = RunThread(interpreterCommand)
         thread.start()
 
-    
     def terminal(self):
         c = Configuration()     # -> in configuration.py
         system = c.getSystem()
@@ -1518,7 +1378,6 @@ class RightPanel(tk.Frame):
         thread = RunThread(terminalCommand)
         thread.start()
 
-    
     def run(self):
         if not self.textPad:
             return

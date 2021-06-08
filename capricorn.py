@@ -4,16 +4,84 @@ import sys
 # import tkinter
 import tkinter as tk
 
-from tkinter import filedialog
+from tkinter import ttk, filedialog
 
 # import own stuff
-from statusbar import Statusbar
 from workspace import Workspace
-from extendedTk import ExtendedStyle
+from extendedTk import ExtendedStyle, FadingLabel
+
+class CapricornMenu(tk.Menu):
+    def __init__(self, master):
+        super().__init__(master)
+
+        # file
+        menu_file = tk.Menu(self, tearoff=0)
+        menu_file.add_command(label="New File", accelerator="Ctrl+N", command=master.new_file)
+        menu_file.add_separator()
+        menu_file.add_command(label="Open File", accelerator="Ctrl+T", command=master.open_file)
+        menu_file.add_separator()
+        menu_file.add_command(label="Save", accelerator="Ctrl+S", command=master.save)
+        menu_file.add_command(label="Save As", accelerator="Ctrl+Shift+S", command=master.save_as)
+        menu_file.add_separator()
+        menu_file.add_command(label="Exit", command=master.exit)
+
+        # edit
+        menu_edit = tk.Menu(self, tearoff=0)
+        menu_edit.add_command(label="Undo", accelerator="Ctrl+Z")
+        menu_edit.add_command(label="Redo", accelerator="Ctrl+Y")
+        menu_edit.add_separator()
+        menu_edit.add_command(label="Cut", accelerator="Ctrl+X")
+        menu_edit.add_command(label="Copy", accelerator="Ctrl+C")
+        menu_edit.add_command(label="Paste", accelerator="Ctrl+V")
+        menu_edit.add_command(label="Dublicate", accelerator="Ctrl+D")
+        menu_edit.add_separator()
+        menu_edit.add_command(label="Find", accelerator="Ctrl+F")
+        menu_edit.add_command(label="Replace", accelerator="Ctrl+H")
+        menu_edit.add_separator()
+        menu_edit.add_command(label="Move Line Up", accelerator="Alt+UpArrow")
+        menu_edit.add_command(label="Move Line Down", accelerator="Alt+DownArrow")
+
+        # view
+        menu_view = tk.Menu(self, tearoff=0)
+        menu_view.add_command(label="Themes")
+
+        # help
+        menu_help = tk.Menu(self, tearoff=0)
+        menu_help.add_command(label="About")
+
+        self.add_cascade(label="File", menu=menu_file)
+        self.add_cascade(label="Edit", menu=menu_edit)
+        self.add_cascade(label="View", menu=menu_view)
+        self.add_cascade(label="Help", menu=menu_help)
+
+
+class Statusbar(ttk.Frame):
+    def __init__(self, master=None, **kw):
+        kw.pop('style', None)
+        super().__init__(master, style='Statusbar.TFrame', **kw)
+
+        self.status = FadingLabel(self, text="Status", style='Statusbar.TLabel')
+
+        self.insert_pos = tk.StringVar(value="Ln: -| Col: -")
+        label = ttk.Label(self, textvariable=self.insert_pos, style='Statusbar.TLabel')
+
+        # grid
+        self.columnconfigure(1, weight=1)
+
+        self.status.grid(row=0, column=0, sticky=tk.W, padx=8, pady=2)
+        label.grid(row=0, column=1, sticky=tk.E, padx=32, pady=2)
+
+    def write(self, msg):
+        self.status.write(msg)
+
+    def update_insert_label(self, event):
+        ln, col = event.widget.index('insert').split('.')
+        self.insert_pos.set("Ln: {}| Col: {}".format(ln, col))
 
 class Capricorn(tk.Tk):
     def __init__(self):
-        tk.Tk.__init__(self)
+        super().__init__()
+
         # setup
         self.title("Capricorn")
         self.geometry("1200x800")
@@ -31,28 +99,23 @@ class Capricorn(tk.Tk):
                 ("Text Files", "*.txt")]
         }
 
-        self.rowconfigure(1, weight=1)
+        self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
         
         # style
         self.style = ExtendedStyle(dir="./themes", theme="dark")
         
         # menubar
-        self.load_menu()
-
-        # get the size of the workspace
-        self.update()
-
-        ws_width = self.winfo_width()
-        ws_height = self.winfo_height()
+        self.menu = CapricornMenu(self)
+        self.config(menu=self.menu)
 
         # workspace
-        self.workspace = Workspace(self, os.getcwd(), ws_width, ws_height, style=self.style, orient=tk.HORIZONTAL)
-        self.workspace.grid(row=1, column=0, sticky=tk.NSEW)
+        self.workspace = Workspace(self, os.getcwd(), style=self.style, orient=tk.HORIZONTAL)
+        self.workspace.grid(row=0, column=0, sticky=tk.NSEW)
 
         # status bar
         self.statusbar = Statusbar(self, style=self.style)
-        self.statusbar.grid(row=2, column=0, sticky=tk.EW)
+        self.statusbar.grid(row=1, column=0, sticky=tk.EW)
 
         # events
         self.bind_all("<Control-n>", self.new_file)
@@ -65,51 +128,6 @@ class Capricorn(tk.Tk):
         # Command Line Arguments
         for arg in sys.argv[1:]:
             self.workspace.load_tab(arg)
-
-    def load_menu(self):
-        menu = tk.Menu(self)
-        self.config(menu=menu)
-
-        # file
-        menu_file = tk.Menu(menu, tearoff=0)
-        menu_file.add_command(label="New File", accelerator="Ctrl+N", command=self.new_file)
-        menu_file.add_separator()
-        menu_file.add_command(label="Open File", accelerator="Ctrl+T", command=self.open_file)
-        menu_file.add_separator()
-        menu_file.add_command(label="Save", accelerator="Ctrl+S", command=self.save)
-        menu_file.add_command(label="Save As", accelerator="Ctrl+Shift+S", command=self.save_as)
-        menu_file.add_separator()
-        menu_file.add_command(label="Exit", command=self.destroy)
-
-        # edit
-        menu_edit = tk.Menu(menu, tearoff=0)
-        menu_edit.add_command(label="Undo", accelerator="Ctrl+Z")
-        menu_edit.add_command(label="Redo", accelerator="Ctrl+Y")
-        menu_edit.add_separator()
-        menu_edit.add_command(label="Cut", accelerator="Ctrl+X")
-        menu_edit.add_command(label="Copy", accelerator="Ctrl+C")
-        menu_edit.add_command(label="Paste", accelerator="Ctrl+V")
-        menu_edit.add_command(label="Dublicate", accelerator="Ctrl+D")
-        menu_edit.add_separator()
-        menu_edit.add_command(label="Find", accelerator="Ctrl+F")
-        menu_edit.add_command(label="Replace", accelerator="Ctrl+H")
-        menu_edit.add_separator()
-        menu_edit.add_command(label="Move Line Up", accelerator="Alt+UpArrow")
-        menu_edit.add_command(label="Move Line Down", accelerator="Alt+DownArrow")
-
-        # view
-        menu_view = tk.Menu(menu, tearoff=0)
-        menu_view.add_command(label="Themes")
-
-        # help
-        menu_help = tk.Menu(menu, tearoff=0)
-        menu_help.add_command(label="About")
-
-        menu.add_cascade(label="File", menu=menu_file)
-        menu.add_cascade(label="Edit", menu=menu_edit)
-        menu.add_cascade(label="View", menu=menu_view)
-        menu.add_cascade(label="Help", menu=menu_help)
-
 
     def new_file(self, *args):
          self.workspace.load_tab(None)
@@ -144,6 +162,9 @@ class Capricorn(tk.Tk):
                 self.statusbar.write("Successfully saved {0}".format(filename))
             else:
                 self.statusbar.write("[Error]: Failed to save {0}".format(filename))
+
+    def exit(self, *args):
+        self.destroy()
 
 
 if __name__ == "__main__":
