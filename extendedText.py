@@ -124,7 +124,7 @@ class ExtendedText(tk.Text):
     
     def intercept_delete(self, index1, index2=None):
         if self._read_only:
-            self.bell()            
+            self.bell()
         elif index1.startswith("sel.") and not self.selection():
             # Possible Error: paste can cause deletes where index1 is sel.start but text has no selection
             pass

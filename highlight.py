@@ -4,15 +4,10 @@ from pygments import lex
 from configparser import ConfigParser
 
 class Highlighter:
-    def __init__(self, text, config_file, lexer):
+    def __init__(self, text, token, lexer):
         self.text = text
         self._lexer = lexer
 
-        config = ConfigParser()
-        config.optionxform = str
-        config.read(config_file)
-        
-        token = config['Token']
         for t in token:
             self.text.tag_configure("Token.{}".format(t), foreground=token[t])
 

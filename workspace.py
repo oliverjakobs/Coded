@@ -21,14 +21,14 @@ class TabData:
         self.index = index
         self.path = path
         self.text = text
-        pass
 
 class Workspace(ttk.PanedWindow):
-    def __init__(self, master, location, style=None, **kw):
+    def __init__(self, master, location, token, style=None, **kw):
         super().__init__(master, **kw)
 
         self.location = location
         self.style = style
+        self._token = token
 
         # content
         self.notebook = ttk.Notebook(self)
@@ -107,7 +107,7 @@ class Workspace(ttk.PanedWindow):
         }
         lexer = lexers.get(pathlib.Path(name).suffix, None)
 
-        tab.text.highlighter = Highlighter(tab.text, "config.ini", lexer)
+        tab.text.highlighter = Highlighter(tab.text, self._token, lexer)
 
         # add to tab dict
         self.tabs[name] = TabData(self.notebook.index(tab), path, tab.text)

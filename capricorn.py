@@ -1,9 +1,9 @@
 import os
 import sys
+from configparser import ConfigParser
 
 # import tkinter
 import tkinter as tk
-
 from tkinter import ttk, filedialog
 
 # import own stuff
@@ -54,7 +54,6 @@ class CapricornMenu(tk.Menu):
         self.add_cascade(label="View", menu=menu_view)
         self.add_cascade(label="Help", menu=menu_help)
 
-
 class Statusbar(ttk.Frame):
     def __init__(self, master=None, **kw):
         kw.pop('style', None)
@@ -79,7 +78,7 @@ class Statusbar(ttk.Frame):
         self.insert_pos.set("Ln: {}| Col: {}".format(ln, col))
 
 class Capricorn(tk.Tk):
-    def __init__(self):
+    def __init__(self, config_path, tabs):
         super().__init__()
 
         # setup
@@ -90,27 +89,30 @@ class Capricorn(tk.Tk):
 
         # config
         # self.state("zoomed")
-        self._filedialog_options = {
-            "defaultextension" : ".txt",
-            "filetypes": [
-                ("All Files", "*.*"),
-                ("Json Files", "*.json"),
-                ("Python Scripts", "*.py"),
-                ("Text Files", "*.txt")]
-        }
+        self._filedialog_options = { "defaultextension" : ".txt", "filetypes": [ ("All Files", "*.*") ] }
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
-        
+
+        # parse config file
+        config = ConfigParser()
+        config.optionxform = str
+        config.read(config_path)
+
+        theme_dir = config.get('Theme', 'dir', fallback=None)
+        theme_name = config.get('Theme', 'name', fallback=None)
+        location = os.getcwd()
+        token = dict(config['Token']) if 'Token' in config.sections() else {}
+
         # style
-        self.style = ExtendedStyle(dir="./themes", theme="dark")
+        self.style = ExtendedStyle(dir=theme_dir, theme=theme_name)
         
         # menubar
         self.menu = CapricornMenu(self)
         self.config(menu=self.menu)
 
         # workspace
-        self.workspace = Workspace(self, os.getcwd(), style=self.style, orient=tk.HORIZONTAL)
+        self.workspace = Workspace(self, location, token, style=self.style, orient=tk.HORIZONTAL)
         self.workspace.grid(row=0, column=0, sticky=tk.NSEW)
 
         # status bar
@@ -126,8 +128,8 @@ class Capricorn(tk.Tk):
         self.bind("<<InsertMove>>", self.statusbar.update_insert_label)
 
         # Command Line Arguments
-        for arg in sys.argv[1:]:
-            self.workspace.load_tab(arg)
+        for t in tabs:
+            self.workspace.load_tab(t)
 
     def new_file(self, *args):
          self.workspace.load_tab(None)
@@ -168,5 +170,5 @@ class Capricorn(tk.Tk):
 
 
 if __name__ == "__main__":
-    app = Capricorn()
+    app = Capricorn("config.ini", sys.argv[1:])
     app.mainloop()

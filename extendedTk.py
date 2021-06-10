@@ -194,10 +194,11 @@ class ExtendedStyle(ttk.Style):
         """
         super().__init__(*args, **kwargs)
 
-        # Append a theme dir to the Tk interpreter auto_path
-        self.tk.call("lappend", "auto_path", "[{}]".format(dir))
-        # Load the themes into the Tkinter interpreter
-        self.tk.eval("source {}/themes.tcl".format(dir))
+        if dir:
+            # Append a theme dir to the Tk interpreter auto_path
+            self.tk.call("lappend", "auto_path", "[{}]".format(dir))
+            # Load the themes into the Tkinter interpreter
+            self.tk.eval("source {}/themes.tcl".format(dir))
 
         # Set the initial theme
         if theme and theme in self.get_themes():
