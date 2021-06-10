@@ -7,7 +7,14 @@ from extendedTk import NumberedTextFrame
 
 from highlight import Highlighter
 
+from pygments.lexers.python import PythonLexer
+from pygments.lexers.markup import MarkdownLexer
+from pygments.lexers.tcl import TclLexer
+from pygments.lexers.c_cpp import CLexer
+from pygments.lexers.configs import IniLexer
+
 import os
+import pathlib
 
 class TabData:
     def __init__(self, index, path, text):
@@ -89,7 +96,18 @@ class Workspace(ttk.PanedWindow):
         self.notebook.add(tab, text=name)
         self.notebook.select(tab)
 
-        tab.text.highlighter = Highlighter(tab.text, "config.ini")
+
+        lexers = {
+            '.py': PythonLexer(),
+            '.md': MarkdownLexer(),
+            '.tcl': TclLexer(),
+            '.c': CLexer(),
+            '.h': CLexer(),
+            '.ini' : IniLexer()
+        }
+        lexer = lexers.get(pathlib.Path(name).suffix, None)
+
+        tab.text.highlighter = Highlighter(tab.text, "config.ini", lexer)
 
         # add to tab dict
         self.tabs[name] = TabData(self.notebook.index(tab), path, tab.text)

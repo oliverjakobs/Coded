@@ -1,15 +1,10 @@
-
+import tkinter as tk
 from pygments import lex
-from pygments.lexers import PythonLexer
-from pygments.lexers import TclLexer
 
 from configparser import ConfigParser
 
-import tkinter as tk
-
-# TODO: dynamic lexer
 class Highlighter:
-    def __init__(self, text, config_file, lexer = PythonLexer()):
+    def __init__(self, text, config_file, lexer):
         self.text = text
         self._lexer = lexer
 
@@ -27,6 +22,9 @@ class Highlighter:
     
     def pygmentize_line(self, line_number):
         """ highlight the given line """
+        if not self._lexer:
+            return
+
         line_start = "%d.%d" % (line_number, 0)
         line_end = "%d.end" % (line_number)
 
