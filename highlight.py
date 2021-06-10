@@ -1,8 +1,6 @@
 import tkinter as tk
 from pygments import lex
 
-from configparser import ConfigParser
-
 class Highlighter:
     def __init__(self, text, token, lexer):
         self.text = text

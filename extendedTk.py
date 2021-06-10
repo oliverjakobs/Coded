@@ -47,7 +47,7 @@ class Fileview(ttk.Frame):
         self.tree = ttk.Treeview(self)
 
         self.tree["yscrollcommand"] = scrollY.set
-        self.tree["xscrollcommand"] = scrollX.set                                
+        self.tree["xscrollcommand"] = scrollX.set
 
         scrollY["command"] = self.tree.yview
         scrollX["command"] = self.tree.xview
@@ -124,9 +124,9 @@ class NumberedTextFrame(ttk.Frame):
         self._scrollX = AutoScrollbar(self, orient=tk.HORIZONTAL)
 
         self.text["yscrollcommand"] = self._on_text_vertical_scroll
-        self.text["xscrollcommand"] = self._on_text_horizontal_scroll  
+        self.text["xscrollcommand"] = self._on_text_horizontal_scroll
 
-        self._scrollY["command"] = self._on_vertical_scroll 
+        self._scrollY["command"] = self._on_vertical_scroll
         self._scrollX["command"] = self._on_horizontal_scroll
 
         self._scrollY.grid(row=0, column=2, sticky=tk.NSEW)

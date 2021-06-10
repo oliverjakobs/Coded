@@ -81,19 +81,6 @@ class Capricorn(tk.Tk):
     def __init__(self, config_path, tabs):
         super().__init__()
 
-        # setup
-        self.title("Capricorn")
-        self.geometry("1200x800")
-        
-        self.iconbitmap('capricorn.ico')
-
-        # config
-        # self.state("zoomed")
-        self._filedialog_options = { "defaultextension" : ".txt", "filetypes": [ ("All Files", "*.*") ] }
-
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
-
         # parse config file
         config = ConfigParser()
         config.optionxform = str
@@ -103,6 +90,17 @@ class Capricorn(tk.Tk):
         theme_name = config.get('Theme', 'name', fallback=None)
         location = os.getcwd()
         token = dict(config['Token']) if 'Token' in config.sections() else {}
+
+        # setup
+        self.title("Capricorn")
+        self.geometry("1200x800")
+        
+        self.iconbitmap('capricorn.ico')
+
+        self._filedialog_options = { "defaultextension" : ".txt", "filetypes": [ ("All Files", "*.*") ] }
+
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
 
         # style
         self.style = ExtendedStyle(dir=theme_dir, theme=theme_name)
@@ -120,10 +118,10 @@ class Capricorn(tk.Tk):
         self.statusbar.grid(row=1, column=0, sticky=tk.EW)
 
         # events
-        self.bind_all("<Control-n>", self.new_file)
-        self.bind_all("<Control-t>", self.open_file)
-        self.bind_all("<Control-s>", self.save)
-        self.bind_all("<Control-S>", self.save_as)
+        self.bind("<Control-n>", self.new_file)
+        self.bind("<Control-t>", self.open_file)
+        self.bind("<Control-s>", self.save)
+        self.bind("<Control-S>", self.save_as)
         
         self.bind("<<InsertMove>>", self.statusbar.update_insert_label)
 

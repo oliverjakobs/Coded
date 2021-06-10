@@ -292,15 +292,25 @@ class ExtendedText(tk.Text):
         return "break"
 
 if __name__ == "__main__":
+    from configparser import ConfigParser
     from extendedTk import ExtendedStyle
+    from pygments.lexers.python import PythonLexer
 
     root = tk.Tk()
     root.geometry("600x400")
 
-    style = ExtendedStyle(dir="./themes", theme="dark")
+    config = ConfigParser()
+    config.optionxform = str
+    config.read("config.ini")
 
-    text = ExtendedText(root)
-    text.highlighter = Highlighter(text, style)
+    theme_dir = config.get('Theme', 'dir', fallback=None)
+    theme_name = config.get('Theme', 'name', fallback=None)
+    token = dict(config['Token']) if 'Token' in config.sections() else {}
+
+    style = ExtendedStyle(dir=theme_dir, theme=theme_name)
+
+    text = ExtendedText(root, wrap=tk.NONE)
+    text.highlighter = Highlighter(text, token, PythonLexer())
     text.pack()
 
     label_text = tk.StringVar()
@@ -316,8 +326,10 @@ if __name__ == "__main__":
 
     text.bind("<<InsertMove>>", update_label)
 
-    text.read("fibonacci.py")
+    text.read("extendedText.py")
 
     root.mainloop()
+
+
 
 
