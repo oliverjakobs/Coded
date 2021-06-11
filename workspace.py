@@ -17,7 +17,7 @@ import os
 import pathlib
 
 class WorkspaceTab:
-    def __init__(self, master, name, path, token, style):
+    def __init__(self, master, name, token, style):
 
         self.frame = NumberedTextFrame(master, style=style, wrap=tk.NONE, bd=0, padx=5, pady=5)
         master.add(self.frame, text=name)
@@ -126,7 +126,7 @@ class Workspace(ttk.PanedWindow):
             return 1
 
         # add to tab dict
-        self.tabs[name] = WorkspaceTab(self.notebook, name, path, self._token, self.style)
+        self.tabs[name] = WorkspaceTab(self.notebook, name, self._token, self.style)
 
         if path and not self.tabs[name].read(path):
             self.delete_tab()
@@ -136,15 +136,11 @@ class Workspace(ttk.PanedWindow):
 
     def save_tab(self, path=None):
         current = self.get_current_name()
-        print(path)
         tab = self.tabs[current]
-        print(tab.path)
         name = tab.change_path(path)
         if name:
-            print("Name: " + name)
             self.tabs.pop(current)
             self.tabs[name] = tab
-        print(tab.path)
 
         if tab.path:
             return 0 if tab.write() else -1, tab.path
