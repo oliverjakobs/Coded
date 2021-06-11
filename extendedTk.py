@@ -99,7 +99,7 @@ class Fileview(ttk.Frame):
 ######################################################################
 class NumberedTextFrame(ttk.Frame):
     """ Decorates text with scrollbars and line numbers """
-    def __init__(self, text, master=None, **kw):
+    def __init__(self, master=None, **kw):
         """
         :param style: 
         """

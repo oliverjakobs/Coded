@@ -16,11 +16,56 @@ from pygments.lexers.configs import IniLexer
 import os
 import pathlib
 
-class TabData:
-    def __init__(self, index, path, text):
-        self.index = index
-        self.path = path
-        self.text = text
+class WorkspaceTab:
+    def __init__(self, master, name, path, token, style):
+
+        self.frame = NumberedTextFrame(master, style=style, wrap=tk.NONE, bd=0, padx=5, pady=5)
+        master.add(self.frame, text=name)
+        master.select(self.frame)
+
+        self.path = None
+        self.index = master.index(self.frame)
+
+        lexers = {
+            '.py': PythonLexer(),
+            '.md': MarkdownLexer(),
+            '.tcl': TclLexer(),
+            '.c': CLexer(),
+            '.h': CLexer(),
+            '.ini' : IniLexer()
+        }
+        lexer = lexers.get(pathlib.Path(name).suffix, None)
+        self.frame.text.highlighter = Highlighter(self.frame.text, token, lexer)
+
+    def change_path(self, new_path) -> str:
+        if not new_path or new_path == self.path:
+            return None
+
+        name = os.path.relpath(new_path)
+        self.path = new_path
+        self.frame.master.tab(self.index, text=name)
+        return name
+
+    def read(self, filename) -> bool:
+        try:
+            self.frame.text.read(filename)
+            self.path = filename
+        except UnicodeDecodeError as e:
+            messagebox.showerror("UnicodeDecodeError", "Could not open {0}: \n{1}".format(filename, e))
+            return False
+        except FileNotFoundError as e:
+            messagebox.showerror("FileNotFoundError", "Could not open {0}: \n{1}".format(filename, e))
+            return False
+        return True
+
+    def write(self) -> bool:
+        try:
+            self.frame.text.write(self.path)
+        except Exception as e:
+            messagebox.showerror("Error", "Could not save {0}: \n{1}".format(self.path, e))
+            return False
+        return True
+
 
 class Workspace(ttk.PanedWindow):
     def __init__(self, master, location, token, style=None, **kw):
@@ -54,33 +99,21 @@ class Workspace(ttk.PanedWindow):
         # print(self.notebook.index("current"))
         pass
 
-    def set_current_name(self, name):
-        self.notebook.tab("current", text=name)
-
     def get_current_name(self):
         return self.notebook.tab("current", option="text")
 
     def change_tab_path(self, name, new_path):
-        if not new_path:
-            return self.tabs[name]
-
-        new_name = os.path.relpath(new_path)
-        if new_name == name:
-            return self.tabs[name]
-
         tab = self.tabs.pop(name, None)
         if tab:
-            tab.path = new_path
-
+            new_name = tab.change_path(new_path)
             self.tabs[new_name] = tab
-            self.set_current_name(new_name)
 
         return tab
 
     def delete_tab(self, name=None):
         if name and name in self.tabs:
-            data = self.tabs.pop(name)
-            self.notebook.forget(data.index)
+            tab = self.tabs.pop(name)
+            self.notebook.forget(tab.index)
         else:
             self.tabs.pop(self.get_current_name())
             self.notebook.forget("current")
@@ -92,50 +125,29 @@ class Workspace(ttk.PanedWindow):
             self.notebook.select(self.tabs[name].index)
             return 1
 
-        tab = NumberedTextFrame(self, style=self.style, wrap=tk.NONE, bd=0, padx=5, pady=5)
-        self.notebook.add(tab, text=name)
-        self.notebook.select(tab)
-
-
-        lexers = {
-            '.py': PythonLexer(),
-            '.md': MarkdownLexer(),
-            '.tcl': TclLexer(),
-            '.c': CLexer(),
-            '.h': CLexer(),
-            '.ini' : IniLexer()
-        }
-        lexer = lexers.get(pathlib.Path(name).suffix, None)
-
-        tab.text.highlighter = Highlighter(tab.text, self._token, lexer)
-
         # add to tab dict
-        self.tabs[name] = TabData(self.notebook.index(tab), path, tab.text)
+        self.tabs[name] = WorkspaceTab(self.notebook, name, path, self._token, self.style)
 
-        if not path: # new tab no text to insert
-            return 0
+        if path and not self.tabs[name].read(path):
+            self.delete_tab()
+            return -1
 
-        try:
-            tab.text.read(path)
-            return 0
-        except UnicodeDecodeError as e:
-            messagebox.showerror("UnicodeDecodeError", "Could not open {0}: \n{1}".format(path, e))
-            self.delete_tab()
-        except FileNotFoundError as e:
-            messagebox.showerror("FileNotFoundError", "Could not open {0}: \n{1}".format(path, e))
-            self.delete_tab()
-        return -1
+        return 0
 
     def save_tab(self, path=None):
-        tab = self.tabs[self.get_current_name()]
-        try:
-            if path or tab.path:
-                tab = self.change_tab_path(self.get_current_name(), path)
-                tab.text.write(tab.path)
-                return 0, tab.path
-                
-            # current tab does not have a path yet and no path was specified
-            return 1, None
-        except Exception as e:
-            messagebox.showerror("Error", "Could not save {0}: \n{1}".format(tab.path, e))
-        return -1, tab.path
+        current = self.get_current_name()
+        print(path)
+        tab = self.tabs[current]
+        print(tab.path)
+        name = tab.change_path(path)
+        if name:
+            print("Name: " + name)
+            self.tabs.pop(current)
+            self.tabs[name] = tab
+        print(tab.path)
+
+        if tab.path:
+            return 0 if tab.write() else -1, tab.path
+
+        # current tab does not have a path yet and no path was specified
+        return 1, None
