@@ -15,11 +15,11 @@ namespace eval ttk::theme::dark {
         -window         "#373737"
         -focuscolor     "#bebebe"
         -checklight     "#e6e6e6"
-        -dark	        "#626262"
-        -darker 	    "#121212"
-        -darkest	    "#000000"
-        -lighter	    "#626262"
-        -lightest   	"#ffffff"
+        -dark           "#626262"
+        -darker         "#121212"
+        -darkest        "#000000"
+        -lighter        "#626262"
+        -lightest       "#ffffff"
         -blue           "#0057a8"
     }
         

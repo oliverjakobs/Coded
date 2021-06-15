@@ -55,9 +55,8 @@ class CapricornMenu(tk.Menu):
         self.add_cascade(label="Help", menu=menu_help)
 
 class Statusbar(ttk.Frame):
-    def __init__(self, master=None, **kw):
-        kw.pop('style', None)
-        super().__init__(master, style='Statusbar.TFrame', **kw)
+    def __init__(self, master=None):
+        super().__init__(master, style='Statusbar.TFrame')
 
         self.status = FadingLabel(self, text="Status", style='Statusbar.TLabel')
 
@@ -114,7 +113,7 @@ class Capricorn(tk.Tk):
         self.workspace.grid(row=0, column=0, sticky=tk.NSEW)
 
         # status bar
-        self.statusbar = Statusbar(self, style=self.style)
+        self.statusbar = Statusbar(self)
         self.statusbar.grid(row=1, column=0, sticky=tk.EW)
 
         # events
