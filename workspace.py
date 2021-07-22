@@ -71,9 +71,11 @@ class Workspace(ttk.PanedWindow):
     def __init__(self, master, location, token, style=None, **kw):
         super().__init__(master, **kw)
 
-        self.location = location
+        # set working directory to location
+        os.chdir(location)
+
+        self.token = token
         self.style = style
-        self._token = token
 
         # content
         self.notebook = ttk.Notebook(self)
@@ -119,14 +121,14 @@ class Workspace(ttk.PanedWindow):
             self.notebook.forget("current")
 
     def load_tab(self, path):
-        directory= self.location
-        name = os.path.join(directory, path) if path else "untitled"
-        if name in self.tabs:   # tab with this name is already open
+        name = os.path.relpath(path) if path else "untitled"
+        
+        if name in self.tabs:   # tab with this name/path is already open
             self.notebook.select(self.tabs[name].index)
             return 1
 
         # add to tab dict
-        self.tabs[name] = WorkspaceTab(self.notebook, name, self._token, self.style)
+        self.tabs[name] = WorkspaceTab(self.notebook, name, self.token, self.style)
 
         if path and not self.tabs[name].read(name):
             self.delete_tab()
