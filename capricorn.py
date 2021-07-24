@@ -88,6 +88,14 @@ class Capricorn(tk.Tk):
 
         theme_dir = config.get('Theme', 'dir', fallback=None)
         theme_name = config.get('Theme', 'name', fallback=None)
+        theme_loader = "_themes"
+
+        # load themes
+        if theme_dir:
+            # Append a theme dir to the Tk interpreter auto_path
+            self.tk.call("lappend", "auto_path", "[{}]".format(theme_dir))
+            # Load the themes into the Tkinter interpreter
+            self.tk.eval("source {}/{}.tcl".format(theme_dir, theme_loader)) 
         
         # setup
         self.title("Capricorn")

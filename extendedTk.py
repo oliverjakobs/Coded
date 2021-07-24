@@ -194,29 +194,22 @@ class ExtendedStyle(ttk.Style):
         """
         super().__init__(*args, **kwargs)
 
-        if dir:
-            # Append a theme dir to the Tk interpreter auto_path
-            self.tk.call("lappend", "auto_path", "[{}]".format(dir))
-            # Load the themes into the Tkinter interpreter
-            self.tk.eval("source {}/_themes.tcl".format(dir))
+        self.set_theme(theme)
 
-        # Set the initial theme
-        if theme and theme in self.get_themes():
-            self.set_theme(theme)
-
-    def set_theme(self, theme_name):
+    def set_theme(self, name):
         """
         Set new theme to use. Uses a direct tk call to allow usage
         of the themes supplied with this package.
 
         :param theme_name: name of theme to activate
         """
-        self.tk.call("package", "require", "ttk::theme::{}".format(theme_name))
-        self.tk.call("ttk::setTheme", theme_name)
+        if name and name in self.get_themes():
+            self.tk.call("package", "require", "ttk::theme::{}".format(name))
+            self.tk.call("ttk::setTheme", name)
 
     def get_themes(self):
         """Return a list of names of available themes"""
-        return list(set(self.tk.call("ttk::themes")))
+        return set(self.tk.call("ttk::themes"))
 
     def theme_use(self, theme_name=None):
         """
